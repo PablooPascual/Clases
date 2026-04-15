@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Clases - Control de Ingresos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+        .calendar-day { min-height: 100px; border: 1px solid #e2e8f0; transition: all 0.2s; }
+        .calendar-day:hover { background-color: #f1f5f9; }
+        .modal { transition: opacity 0.25s ease; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Navegación -->
+    <nav class="bg-indigo-600 text-white p-4 shadow-lg sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                <i class="fas fa-graduation-cap"></i> Mis Clases
+            </h1>
+            <div class="flex gap-4">
+                <button onclick="showSection('dashboard')" class="hover:text-indigo-200"><i class="fas fa-chart-line"></i> Dashboard</button>
+                <button onclick="showSection('calendar')" class="hover:text-indigo-200"><i class="fas fa-calendar-alt"></i> Calendario</button>
+                <button onclick="showSection('students')" class="hover:text-indigo-200"><i class="fas fa-users"></i> Alumnos</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto p-4 md:p-8">
+
+        <!-- SECCIÓN: DASHBOARD -->
+        <section id="section-dashboard" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                    <div class="bg-green-100 p-4 rounded-full text-green-600"><i class="fas fa-euro-sign fa-2x"></i></div>
+                    <div>
+                        <p class="text-sm text-slate-500 font-medium">Ingresos Mes</p>
+                        <h2 id="stat-income" class="text-2xl font-bold">0€</h2>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                    <div class="bg-blue-100 p-4 rounded-full text-blue-600"><i class="fas fa-clock fa-2x"></i></div>
+                    <div>
+                        <p class="text-sm text-slate-500 font-medium">Horas dadas</p>
+                        <h2 id="stat-hours" class="text-2xl font-bold">0h</h2>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+                    <div class="bg-orange-100 p-4 rounded-full text-orange-600"><i class="fas fa-hand-holding-usd fa-2x"></i></div>
+                    <div>
+                        <p class="text-sm text-slate-500 font-medium">Pendiente cobro</p>
+                        <h2 id="stat-pending" class="text-2xl font-bold">0€</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center mt-8">
+                <h3 class="text-xl font-bold">Últimas Clases</h3>
+                <button onclick="openModal('classModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition">
+                    + Registrar Clase
+                </button>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-100">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 border-b border-slate-100">
+                        <tr>
+                            <th class="p-4 text-sm font-semibold text-slate-600">Fecha</th>
+                            <th class="p-4 text-sm font-semibold text-slate-600">Alumno</th>
+                            <th class="p-4 text-sm font-semibold text-slate-600">Horas</th>
+                            <th class="p-4 text-sm font-semibold text-slate-600">Total</th>
+                            <th class="p-4 text-sm font-semibold text-slate-600">Estado</th>
+                            <th class="p-4 text-sm font-semibold text-slate-600">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-classes-body">
+                        <!-- Las clases se cargan aquí con JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: CALENDARIO -->
+        <section id="section-calendar" class="hidden space-y-4">
+            <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                <button onclick="prevMonth()" class="p-2 hover:bg-slate-100 rounded-full"><i class="fas fa-chevron-left"></i></button>
+                <h2 id="calendar-month-year" class="text-lg font-bold capitalize">Mes Año</h2>
+                <button onclick="nextMonth()" class="p-2 hover:bg-slate-100 rounded-full"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <div class="calendar-grid bg-slate-50 border-b text-center font-bold text-xs py-2 uppercase text-slate-500 tracking-wider">
+                    <div>Lun</div><div>Mar</div><div>Mie</div><div>Jue</div><div>Vie</div><div>Sab</div><div>Dom</div>
+                </div>
+                <div id="calendar-days" class="calendar-grid">
+                    <!-- Los días del calendario se cargan aquí -->
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: ALUMNOS -->
+        <section id="section-students" class="hidden space-y-6">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xl font-bold">Mis Alumnos</h3>
+                <button onclick="openModal('studentModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium">
+                    + Nuevo Alumno
+                </button>
+            </div>
+            <div id="students-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Tarjetas de alumnos se cargan aquí -->
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL: REGISTRAR CLASE -->
+    <div id="classModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Registrar Nueva Clase</h3>
+                <button onclick="closeModal('classModal')" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="classForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Alumno</label>
+                    <select id="input-class-student" class="w-full p-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" required></select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Fecha</label>
+                        <input type="date" id="input-class-date" class="w-full p-2 border border-slate-200 rounded-lg" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Hora</label>
+                        <input type="time" id="input-class-time" class="w-full p-2 border border-slate-200 rounded-lg" required>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Duración (Horas)</label>
+                        <input type="number" step="0.5" id="input-class-duration" class="w-full p-2 border border-slate-200 rounded-lg" value="1" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Estado</label>
+                        <select id="input-class-paid" class="w-full p-2 border border-slate-200 rounded-lg">
+                            <option value="false">Pendiente</option>
+                            <option value="true">Pagado</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition">Guardar Clase</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: NUEVO ALUMNO -->
+    <div id="studentModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Añadir Alumno</h3>
+                <button onclick="closeModal('studentModal')" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="studentForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Nombre Completo</label>
+                    <input type="text" id="input-student-name" class="w-full p-2 border border-slate-200 rounded-lg" placeholder="Ej: Juanito Pérez" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Precio por Hora (€)</label>
+                    <input type="number" id="input-student-rate" class="w-full p-2 border border-slate-200 rounded-lg" placeholder="Ej: 15" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Notas (opcional)</label>
+                    <textarea id="input-student-notes" class="w-full p-2 border border-slate-200 rounded-lg" placeholder="Ej: Nivel 3º Primaria, refuerzo mates"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition">Añadir Alumno</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- BASE DE DATOS LOCAL (SIMULADA) ---
+        let students = JSON.parse(localStorage.getItem('students')) || [];
+        let classes = JSON.parse(localStorage.getItem('classes')) || [];
+        
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+
+        // --- INICIALIZACIÓN ---
+        window.onload = () => {
+            updateDashboard();
+            updateStudentDropdown();
+            renderCalendar();
+            renderStudents();
+            showSection('dashboard');
+        };
+
+        // --- FUNCIONES DE NAVEGACIÓN ---
+        function showSection(sectionId) {
+            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+            document.getElementById(`section-${sectionId}`).classList.remove('hidden');
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        // --- FUNCIONES DE ALUMNOS ---
+        document.getElementById('studentForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newStudent = {
+                id: Date.now().toString(),
+                name: document.getElementById('input-student-name').value,
+                rate: parseFloat(document.getElementById('input-student-rate').value),
+                notes: document.getElementById('input-student-notes').value
+            };
+            students.push(newStudent);
+            saveData();
+            updateStudentDropdown();
+            renderStudents();
+            closeModal('studentModal');
+            e.target.reset();
+        });
+
+        function renderStudents() {
+            const grid = document.getElementById('students-grid');
+            grid.innerHTML = students.length === 0 ? '<p class="col-span-full text-center text-slate-400 py-10">Aún no tienes alumnos registrados.</p>' : '';
+            students.forEach(s => {
+                grid.innerHTML += `
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h4 class="font-bold text-lg">${s.name}</h4>
+                                <span class="text-indigo-600 font-semibold text-sm">${s.rate}€/hora</span>
+                            </div>
+                            <button onclick="deleteStudent('${s.id}')" class="text-slate-300 hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
+                        </div>
+                        <p class="text-slate-500 text-sm italic">"${s.notes || 'Sin notas adicionales'}"</p>
+                    </div>
+                `;
+            });
+        }
+
+        function deleteStudent(id) {
+            if(confirm('¿Seguro? Se borrarán también sus registros de clases.')) {
+                students = students.filter(s => s.id !== id);
+                classes = classes.filter(c => c.studentId !== id);
+                saveData();
+                renderStudents();
+                updateDashboard();
+                updateStudentDropdown();
+                renderCalendar();
+            }
+        }
+
+        function updateStudentDropdown() {
+            const select = document.getElementById('input-class-student');
+            select.innerHTML = students.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        }
+
+        // --- FUNCIONES DE CLASES ---
+        document.getElementById('classForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const studentId = document.getElementById('input-class-student').value;
+            const student = students.find(s => s.id === studentId);
+            const duration = parseFloat(document.getElementById('input-class-duration').value);
+
+            const newClass = {
+                id: Date.now().toString(),
+                studentId: studentId,
+                studentName: student.name,
+                date: document.getElementById('input-class-date').value,
+                time: document.getElementById('input-class-time').value,
+                duration: duration,
+                rate: student.rate,
+                total: duration * student.rate,
+                paid: document.getElementById('input-class-paid').value === "true"
+            };
+            classes.push(newClass);
+            saveData();
+            updateDashboard();
+            renderCalendar();
+            closeModal('classModal');
+            e.target.reset();
+        });
+
+        function updateDashboard() {
+            const now = new Date();
+            const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            
+            const monthClasses = classes.filter(c => c.date.startsWith(currentMonthStr));
+            
+            const totalIncome = monthClasses.filter(c => c.paid).reduce((sum, c) => sum + c.total, 0);
+            const totalHours = monthClasses.reduce((sum, c) => sum + c.duration, 0);
+            const pendingIncome = monthClasses.filter(c => !c.paid).reduce((sum, c) => sum + c.total, 0);
+
+            document.getElementById('stat-income').innerText = `${totalIncome.toFixed(2)}€`;
+            document.getElementById('stat-hours').innerText = `${totalHours}h`;
+            document.getElementById('stat-pending').innerText = `${pendingIncome.toFixed(2)}€`;
+
+            renderRecentClasses();
+        }
+
+        function renderRecentClasses() {
+            const tbody = document.getElementById('recent-classes-body');
+            tbody.innerHTML = '';
+            // Ordenar por fecha reciente
+            const sorted = [...classes].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 10);
+
+            sorted.forEach(c => {
+                tbody.innerHTML += `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50">
+                        <td class="p-4 text-sm">${formatDate(c.date)}</td>
+                        <td class="p-4 font-medium">${c.studentName}</td>
+                        <td class="p-4 text-sm">${c.duration}h</td>
+                        <td class="p-4 font-bold text-indigo-600">${c.total.toFixed(2)}€</td>
+                        <td class="p-4">
+                            <span class="px-2 py-1 rounded-full text-xs font-bold ${c.paid ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}">
+                                ${c.paid ? 'Pagado' : 'Pendiente'}
+                            </span>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex gap-2 text-slate-400">
+                                <button onclick="togglePayment('${c.id}')" title="Marcar pagado/pendiente"><i class="fas fa-sync-alt hover:text-indigo-500"></i></button>
+                                <button onclick="deleteClass('${c.id}')" title="Eliminar"><i class="fas fa-trash hover:text-red-500"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function togglePayment(id) {
+            const index = classes.findIndex(c => c.id === id);
+            classes[index].paid = !classes[index].paid;
+            saveData();
+            updateDashboard();
+            renderCalendar();
+        }
+
+        function deleteClass(id) {
+            classes = classes.filter(c => c.id !== id);
+            saveData();
+            updateDashboard();
+            renderCalendar();
+        }
+
+        // --- FUNCIONES CALENDARIO ---
+        function renderCalendar() {
+            const container = document.getElementById('calendar-days');
+            const monthLabel = document.getElementById('calendar-month-year');
+            container.innerHTML = '';
+
+            const date = new Date(currentYear, currentMonth, 1);
+            const monthName = date.toLocaleString('es', { month: 'long' });
+            monthLabel.innerText = `${monthName} ${currentYear}`;
+
+            // Ajuste inicio de semana (Lunes = 1, Domingo = 0)
+            let startDay = date.getDay();
+            startDay = startDay === 0 ? 6 : startDay - 1;
+
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+            // Espacios vacíos antes del primer día
+            for (let i = 0; i < startDay; i++) {
+                container.innerHTML += `<div class="calendar-day bg-slate-50/50"></div>`;
+            }
+
+            // Días del mes
+            for (let d = 1; d <= daysInMonth; d++) {
+                const fullDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const dayClasses = classes.filter(c => c.date === fullDate);
+                const dailyTotal = dayClasses.reduce((sum, c) => sum + c.total, 0);
+
+                container.innerHTML += `
+                    <div class="calendar-day p-2">
+                        <span class="text-xs font-bold text-slate-400">${d}</span>
+                        <div class="mt-1 space-y-1">
+                            ${dayClasses.map(c => `
+                                <div class="text-[10px] leading-tight p-1 rounded ${c.paid ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-700'} truncate" title="${c.studentName}: ${c.total}€">
+                                    ${c.studentName}
+                                </div>
+                            `).join('')}
+                            ${dailyTotal > 0 ? `<div class="text-[10px] font-bold text-indigo-600 mt-1">Total: ${dailyTotal}€</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function prevMonth() { 
+            currentMonth--; 
+            if(currentMonth < 0) { currentMonth = 11; currentYear--; } 
+            renderCalendar(); 
+        }
+        function nextMonth() { 
+            currentMonth++; 
+            if(currentMonth > 11) { currentMonth = 0; currentYear++; } 
+            renderCalendar(); 
+        }
+
+        // --- AUXILIARES ---
+        function saveData() {
+            localStorage.setItem('students', JSON.stringify(students));
+            localStorage.setItem('classes', JSON.stringify(classes));
+        }
+
+        function formatDate(dateStr) {
+            const options = { day: 'numeric', month: 'short' };
+            return new Date(dateStr).toLocaleDateString('es', options);
+        }
+    </script>
+</body>
+</html>
