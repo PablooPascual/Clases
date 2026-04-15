@@ -62,13 +62,14 @@
 
             <div class="flex justify-between items-center mt-8">
                 <h3 class="text-xl font-bold">Últimas Clases</h3>
-                <button onclick="openModal('classModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition">
+                <button id="btn-open-class-modal" onclick="openModal('classModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition">
                     + Registrar Clase
                 </button>
             </div>
 
             <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-100">
-                <table class="w-full text-left">
+                <div class="overflow-x-auto">
+                <table class="w-full text-left min-w-[640px]">
                     <thead class="bg-slate-50 border-b border-slate-100">
                         <tr>
                             <th class="p-4 text-sm font-semibold text-slate-600">Fecha</th>
@@ -83,6 +84,7 @@
                         <!-- Las clases se cargan aquí con JS -->
                     </tbody>
                 </table>
+                </div>
             </div>
         </section>
 
@@ -122,37 +124,37 @@
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold">Registrar Nueva Clase</h3>
-                <button onclick="closeModal('classModal')" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+                <button onclick="closeModal('classModal')" aria-label="Cerrar modal de clase" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
             </div>
             <form id="classForm" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium mb-1">Alumno</label>
+                    <label for="input-class-student" class="block text-sm font-medium mb-1">Alumno</label>
                     <select id="input-class-student" class="w-full p-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" required></select>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium mb-1">Fecha</label>
+                        <label for="input-class-date" class="block text-sm font-medium mb-1">Fecha</label>
                         <input type="date" id="input-class-date" class="w-full p-2 border border-slate-200 rounded-lg" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Hora</label>
+                        <label for="input-class-time" class="block text-sm font-medium mb-1">Hora</label>
                         <input type="time" id="input-class-time" class="w-full p-2 border border-slate-200 rounded-lg" required>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium mb-1">Duración (Horas)</label>
-                        <input type="number" step="0.5" id="input-class-duration" class="w-full p-2 border border-slate-200 rounded-lg" value="1" required>
+                        <label for="input-class-duration" class="block text-sm font-medium mb-1">Duración (Horas)</label>
+                        <input type="number" step="0.5" min="0.5" id="input-class-duration" class="w-full p-2 border border-slate-200 rounded-lg" value="1" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium mb-1">Estado</label>
+                        <label for="input-class-paid" class="block text-sm font-medium mb-1">Estado</label>
                         <select id="input-class-paid" class="w-full p-2 border border-slate-200 rounded-lg">
                             <option value="false">Pendiente</option>
                             <option value="true">Pagado</option>
                         </select>
                     </div>
                 </div>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition">Guardar Clase</button>
+                <button id="btn-save-class" type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition">Guardar Clase</button>
             </form>
         </div>
     </div>
@@ -162,19 +164,19 @@
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold">Añadir Alumno</h3>
-                <button onclick="closeModal('studentModal')" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+                <button onclick="closeModal('studentModal')" aria-label="Cerrar modal de alumno" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
             </div>
             <form id="studentForm" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium mb-1">Nombre Completo</label>
+                    <label for="input-student-name" class="block text-sm font-medium mb-1">Nombre Completo</label>
                     <input type="text" id="input-student-name" class="w-full p-2 border border-slate-200 rounded-lg" placeholder="Ej: Juanito Pérez" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1">Precio por Hora (€)</label>
-                    <input type="number" id="input-student-rate" class="w-full p-2 border border-slate-200 rounded-lg" placeholder="Ej: 15" required>
+                    <label for="input-student-rate" class="block text-sm font-medium mb-1">Precio por Hora (€)</label>
+                    <input type="number" step="0.5" min="0" id="input-student-rate" class="w-full p-2 border border-slate-200 rounded-lg" placeholder="Ej: 15" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1">Notas (opcional)</label>
+                    <label for="input-student-notes" class="block text-sm font-medium mb-1">Notas (opcional)</label>
                     <textarea id="input-student-notes" class="w-full p-2 border border-slate-200 rounded-lg" placeholder="Ej: Nivel 3º Primaria, refuerzo mates"></textarea>
                 </div>
                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition">Añadir Alumno</button>
@@ -184,8 +186,47 @@
 
     <script>
         // --- BASE DE DATOS LOCAL (SIMULADA) ---
-        let students = JSON.parse(localStorage.getItem('students')) || [];
-        let classes = JSON.parse(localStorage.getItem('classes')) || [];
+        function getStorageArray(key) {
+            try {
+                const raw = localStorage.getItem(key);
+                const parsed = raw ? JSON.parse(raw) : [];
+                return Array.isArray(parsed) ? parsed : [];
+            } catch {
+                return [];
+            }
+        }
+
+        function escapeHTML(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        let students = getStorageArray('students');
+        let classes = getStorageArray('classes');
+
+        function normalizePaid(value) {
+            if (typeof value === 'boolean') return value;
+            if (typeof value === 'string') return value.toLowerCase() === 'true';
+            return Boolean(value);
+        }
+
+        // Normaliza datos guardados para evitar estados visuales incorrectos.
+        students = students.map(s => ({
+            ...s,
+            rate: Number(s.rate) || 0
+        }));
+
+        classes = classes.map(c => ({
+            ...c,
+            duration: Number(c.duration) || 0,
+            rate: Number(c.rate) || 0,
+            total: Number(c.total) || 0,
+            paid: normalizePaid(c.paid)
+        }));
         
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
@@ -194,6 +235,7 @@
         window.onload = () => {
             updateDashboard();
             updateStudentDropdown();
+            syncClassFormAvailability();
             renderCalendar();
             renderStudents();
             showSection('dashboard');
@@ -205,8 +247,21 @@
             document.getElementById(`section-${sectionId}`).classList.remove('hidden');
         }
 
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function openModal(id) {
+            if (id === 'classModal' && students.length === 0) {
+                alert('Primero añade al menos un alumno para registrar clases.');
+                return;
+            }
+            document.getElementById(id).classList.remove('hidden');
+        }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        // Cerrar modales pulsando ESC.
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape') return;
+            closeModal('classModal');
+            closeModal('studentModal');
+        });
 
         // --- FUNCIONES DE ALUMNOS ---
         document.getElementById('studentForm').addEventListener('submit', (e) => {
@@ -220,6 +275,7 @@
             students.push(newStudent);
             saveData();
             updateStudentDropdown();
+            syncClassFormAvailability();
             renderStudents();
             closeModal('studentModal');
             e.target.reset();
@@ -229,16 +285,18 @@
             const grid = document.getElementById('students-grid');
             grid.innerHTML = students.length === 0 ? '<p class="col-span-full text-center text-slate-400 py-10">Aún no tienes alumnos registrados.</p>' : '';
             students.forEach(s => {
+                const safeName = escapeHTML(s.name);
+                const safeNotes = escapeHTML(s.notes || 'Sin notas adicionales');
                 grid.innerHTML += `
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
                         <div class="flex justify-between items-start mb-4">
                             <div>
-                                <h4 class="font-bold text-lg">${s.name}</h4>
+                                <h4 class="font-bold text-lg">${safeName}</h4>
                                 <span class="text-indigo-600 font-semibold text-sm">${s.rate}€/hora</span>
                             </div>
-                            <button onclick="deleteStudent('${s.id}')" class="text-slate-300 hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
+                            <button onclick="deleteStudent('${s.id}')" aria-label="Eliminar alumno" class="text-slate-300 hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
                         </div>
-                        <p class="text-slate-500 text-sm italic">"${s.notes || 'Sin notas adicionales'}"</p>
+                        <p class="text-slate-500 text-sm italic">"${safeNotes}"</p>
                     </div>
                 `;
             });
@@ -252,13 +310,33 @@
                 renderStudents();
                 updateDashboard();
                 updateStudentDropdown();
+                syncClassFormAvailability();
                 renderCalendar();
             }
         }
 
         function updateStudentDropdown() {
             const select = document.getElementById('input-class-student');
-            select.innerHTML = students.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+            if (students.length === 0) {
+                select.innerHTML = '<option value="" disabled selected>No hay alumnos disponibles</option>';
+                return;
+            }
+            select.innerHTML = students.map(s => `<option value="${s.id}">${escapeHTML(s.name)}</option>`).join('');
+        }
+
+        function syncClassFormAvailability() {
+            const openBtn = document.getElementById('btn-open-class-modal');
+            const saveBtn = document.getElementById('btn-save-class');
+            const studentSelect = document.getElementById('input-class-student');
+
+            const hasStudents = students.length > 0;
+            if (openBtn) {
+                openBtn.disabled = !hasStudents;
+                openBtn.classList.toggle('opacity-60', !hasStudents);
+                openBtn.classList.toggle('cursor-not-allowed', !hasStudents);
+            }
+            if (saveBtn) saveBtn.disabled = !hasStudents;
+            if (studentSelect) studentSelect.disabled = !hasStudents;
         }
 
         // --- FUNCIONES DE CLASES ---
@@ -266,7 +344,15 @@
             e.preventDefault();
             const studentId = document.getElementById('input-class-student').value;
             const student = students.find(s => s.id === studentId);
+            if (!student) {
+                alert('Selecciona un alumno válido antes de guardar la clase.');
+                return;
+            }
             const duration = parseFloat(document.getElementById('input-class-duration').value);
+            if (!Number.isFinite(duration) || duration <= 0) {
+                alert('La duración debe ser mayor de 0.');
+                return;
+            }
 
             const newClass = {
                 id: Date.now().toString(),
@@ -308,13 +394,16 @@
             const tbody = document.getElementById('recent-classes-body');
             tbody.innerHTML = '';
             // Ordenar por fecha reciente
-            const sorted = [...classes].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 10);
+            const sorted = [...classes]
+                .sort((a, b) => `${b.date}T${b.time || '00:00'}`.localeCompare(`${a.date}T${a.time || '00:00'}`))
+                .slice(0, 10);
 
             sorted.forEach(c => {
+                const safeStudentName = escapeHTML(c.studentName);
                 tbody.innerHTML += `
                     <tr class="border-b border-slate-50 hover:bg-slate-50">
                         <td class="p-4 text-sm">${formatDate(c.date)}</td>
-                        <td class="p-4 font-medium">${c.studentName}</td>
+                        <td class="p-4 font-medium">${safeStudentName}</td>
                         <td class="p-4 text-sm">${c.duration}h</td>
                         <td class="p-4 font-bold text-indigo-600">${c.total.toFixed(2)}€</td>
                         <td class="p-4">
@@ -324,8 +413,8 @@
                         </td>
                         <td class="p-4">
                             <div class="flex gap-2 text-slate-400">
-                                <button onclick="togglePayment('${c.id}')" title="Marcar pagado/pendiente"><i class="fas fa-sync-alt hover:text-indigo-500"></i></button>
-                                <button onclick="deleteClass('${c.id}')" title="Eliminar"><i class="fas fa-trash hover:text-red-500"></i></button>
+                                <button onclick="togglePayment('${c.id}')" title="Marcar pagado/pendiente" aria-label="Cambiar estado de pago"><i class="fas fa-sync-alt hover:text-indigo-500"></i></button>
+                                <button onclick="deleteClass('${c.id}')" title="Eliminar" aria-label="Eliminar clase"><i class="fas fa-trash hover:text-red-500"></i></button>
                             </div>
                         </td>
                     </tr>
@@ -335,7 +424,8 @@
 
         function togglePayment(id) {
             const index = classes.findIndex(c => c.id === id);
-            classes[index].paid = !classes[index].paid;
+            if (index === -1) return;
+            classes[index].paid = !normalizePaid(classes[index].paid);
             saveData();
             updateDashboard();
             renderCalendar();
@@ -380,8 +470,8 @@
                         <span class="text-xs font-bold text-slate-400">${d}</span>
                         <div class="mt-1 space-y-1">
                             ${dayClasses.map(c => `
-                                <div class="text-[10px] leading-tight p-1 rounded ${c.paid ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-700'} truncate" title="${c.studentName}: ${c.total}€">
-                                    ${c.studentName}
+                                <div class="text-[10px] leading-tight p-1 rounded ${c.paid ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-700'} truncate" title="${escapeHTML(c.studentName)}: ${c.total}€">
+                                    ${escapeHTML(c.studentName)}
                                 </div>
                             `).join('')}
                             ${dailyTotal > 0 ? `<div class="text-[10px] font-bold text-indigo-600 mt-1">Total: ${dailyTotal}€</div>` : ''}
@@ -410,7 +500,9 @@
 
         function formatDate(dateStr) {
             const options = { day: 'numeric', month: 'short' };
-            return new Date(dateStr).toLocaleDateString('es', options);
+            const [year, month, day] = (dateStr || '').split('-').map(Number);
+            if (!year || !month || !day) return dateStr;
+            return new Date(year, month - 1, day).toLocaleDateString('es', options);
         }
     </script>
 </body>
