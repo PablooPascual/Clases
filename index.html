@@ -238,6 +238,108 @@
   tr.past td .badge-pend { background: rgba(251,191,36,0.07); color: #8a7540; }
   tr.future { background: rgba(37,99,235,0.03); }
 
+  .class-summary td {
+    padding: 10px 14px;
+    vertical-align: middle;
+  }
+  .class-summary { cursor: pointer; }
+  .class-summary:hover { background: var(--bg3); }
+  .class-summary .summary-label {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text3);
+    margin-bottom: 4px;
+  }
+  .class-summary .summary-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .class-summary .summary-sub {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+  .class-summary .price-cell {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .class-summary .toggle-cell {
+    width: 48px;
+    text-align: right;
+  }
+  .expand-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    color: var(--text3);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform .15s, background .15s, color .15s, border-color .15s;
+  }
+  .expand-btn:hover {
+    background: var(--bg4);
+    color: var(--text);
+    border-color: var(--border2);
+  }
+  .expand-btn.open { transform: rotate(180deg); }
+
+  .class-details td {
+    padding: 0 14px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-panel {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .detail-item {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+  .detail-item .summary-label {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text3);
+    margin-bottom: 4px;
+  }
+  .detail-item .summary-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .detail-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .detail-actions .row-actions {
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
   .date-cell { color: var(--text3); font-size: 12px; white-space: nowrap; }
   .date-cell .time { font-size: 11px; color: var(--text3); display: block; margin-top: 1px; }
   .future .date-cell { color: var(--text2); }
@@ -300,6 +402,8 @@
     font-size: 13px;
   }
   .empty-row td::before { content: none; }
+
+  .details-hidden { display: none; }
 
   /* SIDEBAR */
   .sidebar { display: flex; flex-direction: column; gap: 12px; }
@@ -489,16 +593,17 @@
     .tbl-wrap td,
     .tbl-wrap tr { display: block; width: 100%; }
     .tbl-wrap thead { display: none; }
-    .tbl-wrap tr.class-row { margin: 10px 12px; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--bg2); box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .tbl-wrap tr.class-row td { border-bottom: 1px solid var(--border); padding: 10px 12px; display: flex; justify-content: space-between; gap: 10px; align-items: center; min-width: 0; }
-    .tbl-wrap tr.class-row td::before { content: attr(data-label); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); flex: 0 0 auto; }
-    .tbl-wrap tr.class-row td[data-label="Fecha"] { grid-column: 1 / -1; }
-    .tbl-wrap tr.class-row td[data-label="Alumno"] { font-weight: 600; }
-    .tbl-wrap tr.class-row td[data-label="Acciones"] { grid-column: 1 / -1; border-bottom: none; justify-content: flex-end; }
-    .tbl-wrap tr.class-row td[data-label="Acciones"]::before { align-self: center; }
-    .tbl-wrap tr.class-row td[data-label="Acciones"] .row-actions { width: 100%; justify-content: flex-end; flex-wrap: wrap; }
-    .tbl-wrap tr.class-row td[data-label="Acciones"] .row-actions button { padding: 6px 0; }
-    .tbl-wrap tr.class-row td:last-child { border-bottom: none; }
+    .tbl-wrap tr.class-summary { margin: 10px 12px; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--bg2); box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04); display: grid; grid-template-columns: 1.1fr 1.3fr .75fr 48px; }
+    .tbl-wrap tr.class-summary td { border-bottom: 1px solid var(--border); padding: 10px 12px; display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 0; }
+    .tbl-wrap tr.class-summary td:last-child { border-bottom: none; }
+    .tbl-wrap tr.class-summary .toggle-cell { align-items: flex-end; }
+    .tbl-wrap tr.class-summary .price-cell { align-items: flex-end; }
+    .tbl-wrap tr.class-details td { padding: 0 10px 10px; border-bottom: none; }
+    .detail-panel { padding: 10px; margin: 0 2px 10px; }
+    .detail-grid { grid-template-columns: 1fr; }
+    .detail-actions { justify-content: stretch; }
+    .detail-actions .row-actions { width: 100%; justify-content: stretch; flex-direction: column; }
+    .detail-actions .row-actions button { width: 100%; padding: 8px 0; }
     .tbl-wrap .date-cell .time { margin-top: 2px; }
     .tbl-wrap td.section-label,
     .tbl-wrap .empty-row td { display: block; }
@@ -514,39 +619,6 @@
     .card-head { padding: 12px; }
     .filters { gap: 6px; }
     .filter-btn { flex: 1 1 100%; }
-    .tbl-wrap tr.class-row {
-      margin: 10px 10px;
-      grid-template-columns: 1fr;
-    }
-    .tbl-wrap tr.class-row td[data-label="Fecha"],
-    .tbl-wrap tr.class-row td[data-label="Alumno"],
-    .tbl-wrap tr.class-row td[data-label="Horas"],
-    .tbl-wrap tr.class-row td[data-label="Total"],
-    .tbl-wrap tr.class-row td[data-label="Estado"],
-    .tbl-wrap tr.class-row td[data-label="Acciones"] {
-      grid-column: 1 / -1;
-    }
-    .tbl-wrap tr.class-row td {
-      padding: 9px 10px;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 4px;
-    }
-    .tbl-wrap tr.class-row td::before { margin-bottom: 0; }
-    .tbl-wrap tr.class-row td[data-label="Acciones"] {
-      justify-content: flex-start;
-    }
-    .tbl-wrap tr.class-row td[data-label="Acciones"] .row-actions {
-      width: 100%;
-      justify-content: stretch;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .tbl-wrap tr.class-row td[data-label="Acciones"] .row-actions button {
-      width: 100%;
-      text-align: center;
-      padding: 8px 0;
-    }
   }
   @media (max-width: 380px) {
     .metrics { grid-template-columns: 1fr 1fr; }
@@ -555,7 +627,6 @@
     .filter-btn { flex-basis: 100%; }
     .modal { padding: 20px; }
     .form-row { grid-template-columns: 1fr; }
-    .tbl-wrap tr.class-row { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -723,6 +794,7 @@
 
   // --- MONTH SELECTOR ---
   let selMonth, selYear;
+  let expandedClassId = null;
   (function initMonth() {
     const now = new Date();
     selMonth = now.getMonth(); selYear = now.getFullYear();
@@ -823,22 +895,59 @@
       ? `<span class="badge badge-future">Próxima</span>`
       : (c.paid ? `<span class="badge badge-paid">Pagado</span>` : `<span class="badge badge-pend">Pendiente</span>`);
 
+    const isOpen = expandedClassId === c.id;
     const payBtn = (!future && !c.paid)
       ? `<button class="pay-btn" onclick="togglePay('${c.id}')">Cobrar</button>`
       : (!future && c.paid ? `<button class="pay-btn" onclick="togglePay('${c.id}')">Revertir</button>` : '');
+    const arrow = isOpen ? '▲' : '▼';
 
-    return `<tr class="class-row ${future ? 'future' : 'past'}">
-      <td class="date-cell" data-label="Fecha">${fmtDate(c.date)}${c.time ? `<span class="time">${c.time}</span>` : ''}</td>
-      <td class="name-cell" data-label="Alumno">${esc(c.studentName)}</td>
-      <td data-label="Horas">${c.duration}h</td>
-      <td class="total-cell money" data-label="Total">${Math.round(c.total)}€</td>
-      <td data-label="Estado">${badge}</td>
-      <td data-label="Acciones"><div class="row-actions">
-        ${payBtn}
-        <button onclick="openEditClass('${c.id}')">Editar</button>
-        <button class="del-btn" onclick="deleteClass('${c.id}')">✕</button>
-      </div></td>
-    </tr>`;
+    return `
+      <tr class="class-summary ${future ? 'future' : 'past'}" onclick="toggleClassDetails('${c.id}')">
+        <td class="date-cell" data-label="Día">
+          ${fmtDate(c.date)}${c.time ? `<span class="time">${c.time}</span>` : ''}
+        </td>
+        <td class="name-cell" data-label="Alumno">
+          <div class="summary-label">Alumno</div>
+          <div class="summary-value">${esc(c.studentName)}</div>
+        </td>
+        <td class="price-cell" data-label="Precio">
+          <div class="summary-label">Precio</div>
+          <div class="summary-value money">${Math.round(c.total)}€</div>
+        </td>
+        <td class="toggle-cell"><button class="expand-btn ${isOpen ? 'open' : ''}" type="button" aria-label="Abrir detalles" onclick="event.stopPropagation(); toggleClassDetails('${c.id}')">${arrow}</button></td>
+      </tr>
+      <tr class="class-details ${isOpen ? '' : 'details-hidden'}">
+        <td colspan="4">
+          <div class="detail-panel">
+            <div class="detail-grid">
+              <div class="detail-item">
+                <div class="summary-label">Horas</div>
+                <div class="summary-value">${c.duration}h</div>
+              </div>
+              <div class="detail-item">
+                <div class="summary-label">Estado</div>
+                <div class="summary-value">${badge}</div>
+              </div>
+              <div class="detail-item">
+                <div class="summary-label">Fecha completa</div>
+                <div class="summary-value">${fmtDate(c.date)}${c.time ? ` · ${c.time}` : ''}</div>
+              </div>
+            </div>
+            <div class="detail-actions">
+              <div class="row-actions">
+                ${payBtn}
+                <button onclick="openEditClass('${c.id}')">Editar</button>
+                <button class="del-btn" onclick="deleteClass('${c.id}')">✕</button>
+              </div>
+            </div>
+          </div>
+        </td>
+      </tr>`;
+  }
+
+  function toggleClassDetails(id) {
+    expandedClassId = expandedClassId === id ? null : id;
+    renderClasses();
   }
 
   // --- RENDER STUDENTS SIDEBAR ---
@@ -978,6 +1087,7 @@
 
   function deleteClass(id) {
     classes = classes.filter(c => c.id !== id);
+    if (expandedClassId === id) expandedClassId = null;
     save(); render(); toast('Clase eliminada.');
   }
 
