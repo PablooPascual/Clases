@@ -9,29 +9,29 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #0f0f13;
-    --bg2: #16161c;
-    --bg3: #1e1e27;
-    --bg4: #26262f;
-    --border: rgba(255,255,255,0.07);
-    --border2: rgba(255,255,255,0.12);
-    --text: #f0eff4;
-    --text2: #9996aa;
-    --text3: #5c5a6b;
-    --accent: #7c6cff;
-    --accent2: #5f52d6;
-    --accent-soft: rgba(124,108,255,0.12);
-    --green: #34d399;
-    --green-soft: rgba(52,211,153,0.1);
-    --amber: #fbbf24;
-    --amber-soft: rgba(251,191,36,0.1);
-    --red: #f87171;
-    --red-soft: rgba(248,113,113,0.08);
-    --blue: #60a5fa;
-    --blue-soft: rgba(96,165,250,0.1);
-    --radius: 12px;
-    --radius-sm: 8px;
-    --radius-xs: 6px;
+    --bg: #f4f7fb;
+    --bg2: #ffffff;
+    --bg3: #f7f9fc;
+    --bg4: #eef3f8;
+    --border: rgba(17,24,39,0.08);
+    --border2: rgba(17,24,39,0.14);
+    --text: #0f172a;
+    --text2: #475569;
+    --text3: #64748b;
+    --accent: #2563eb;
+    --accent2: #1d4ed8;
+    --accent-soft: rgba(37,99,235,0.10);
+    --green: #059669;
+    --green-soft: rgba(5,150,105,0.10);
+    --amber: #d97706;
+    --amber-soft: rgba(217,119,6,0.10);
+    --red: #dc2626;
+    --red-soft: rgba(220,38,38,0.08);
+    --blue: #0284c7;
+    --blue-soft: rgba(2,132,199,0.10);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --radius-xs: 8px;
     --font: 'DM Sans', sans-serif;
   }
 
@@ -49,8 +49,8 @@
     position: fixed;
     inset: 0;
     background:
-      radial-gradient(ellipse 80% 50% at 20% -10%, rgba(124,108,255,0.18) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 85% 100%, rgba(96,165,250,0.1) 0%, transparent 55%);
+      radial-gradient(ellipse 80% 50% at 20% -10%, rgba(37,99,235,0.14) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 85% 100%, rgba(5,150,105,0.08) 0%, transparent 55%);
     pointer-events: none;
     z-index: 0;
   }
@@ -59,7 +59,7 @@
     content: '';
     position: fixed;
     inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.015'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%230f172a' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     pointer-events: none;
     z-index: 0;
   }
@@ -83,7 +83,7 @@
   select.month-sel {
     font-family: var(--font);
     font-size: 13px;
-    background: var(--bg3);
+    background: var(--bg2);
     border: 1px solid var(--border2);
     color: var(--text);
     padding: 7px 12px;
@@ -101,13 +101,13 @@
     padding: 7px 14px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border2);
-    background: var(--bg3);
+    background: var(--bg2);
     color: var(--text2);
     cursor: pointer;
-    transition: all .15s;
+    transition: transform .15s, background .15s, color .15s, border-color .15s;
     letter-spacing: -0.01em;
   }
-  .btn:hover { background: var(--bg4); color: var(--text); border-color: var(--border2); }
+  .btn:hover { background: var(--bg4); color: var(--text); border-color: var(--border2); transform: translateY(-1px); }
   .btn-primary {
     background: var(--accent);
     border-color: var(--accent);
@@ -131,6 +131,7 @@
     padding: 16px;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
   }
   .metric::before {
     content: '';
@@ -175,6 +176,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow: hidden;
+    box-shadow: 0 14px 36px rgba(15, 23, 42, 0.05);
   }
   .card-head {
     padding: 13px 16px;
@@ -200,14 +202,14 @@
     padding: 3px 10px;
     border: 1px solid var(--border);
     border-radius: 20px;
-    background: transparent;
+    background: var(--bg2);
     color: var(--text3);
     cursor: pointer;
     transition: all .15s;
     letter-spacing: -0.01em;
   }
   .filter-btn:hover { color: var(--text2); border-color: var(--border2); }
-  .filter-btn.on { background: var(--accent-soft); border-color: var(--accent); color: #c5beff; }
+  .filter-btn.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
 
   /* TABLE */
   .tbl-wrap { overflow-x: auto; }
@@ -234,7 +236,7 @@
   tr:last-child td { border-bottom: none; }
   tr.past td { opacity: .6; }
   tr.past td .badge-pend { background: rgba(251,191,36,0.07); color: #8a7540; }
-  tr.future { background: rgba(124,108,255,0.03); }
+  tr.future { background: rgba(37,99,235,0.03); }
 
   .date-cell { color: var(--text3); font-size: 12px; white-space: nowrap; }
   .date-cell .time { font-size: 11px; color: var(--text3); display: block; margin-top: 1px; }
@@ -254,7 +256,7 @@
   }
   .badge-paid { background: var(--green-soft); color: var(--green); }
   .badge-pend { background: var(--amber-soft); color: var(--amber); }
-  .badge-future { background: var(--accent-soft); color: #c5beff; font-size: 10px; }
+  .badge-future { background: var(--accent-soft); color: var(--accent); font-size: 10px; }
 
   .tag-past {
     display: inline-block;
@@ -448,6 +450,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    width: 100%;
   }
   .section-dot {
     width: 5px; height: 5px;
@@ -466,12 +469,39 @@
   @media (max-width: 520px) {
     .metrics { grid-template-columns: repeat(2, 1fr); }
     .metric-val { font-size: 22px; }
-    .topbar-right { width: 100%; justify-content: flex-end; }
+    .topbar { align-items: stretch; }
+    .topbar-right { width: 100%; justify-content: stretch; }
+    .topbar-right > * { flex: 1 1 auto; min-width: 0; }
+    select.month-sel { width: 100%; }
     .btn { font-size: 12px; padding: 6px 11px; }
+    .filters { width: 100%; }
+    .filter-btn { flex: 1 1 calc(50% - 4px); text-align: center; }
+    .card-head { align-items: flex-start; }
+    table { min-width: 100%; }
+    .tbl-wrap { overflow: visible; }
+    .tbl-wrap table,
+    .tbl-wrap thead,
+    .tbl-wrap tbody,
+    .tbl-wrap th,
+    .tbl-wrap td,
+    .tbl-wrap tr { display: block; width: 100%; }
+    .tbl-wrap thead { display: none; }
+    .tbl-wrap tr { margin: 10px 12px; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--bg2); box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04); }
+    .tbl-wrap td { border-bottom: 1px solid var(--border); padding: 10px 12px; display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+    .tbl-wrap td::before { content: attr(data-label); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); flex: 0 0 auto; }
+    .tbl-wrap td:last-child { border-bottom: none; }
+    .tbl-wrap .date-cell .time { margin-top: 2px; }
+    .tbl-wrap .row-actions { width: 100%; justify-content: flex-end; flex-wrap: wrap; }
+    .tbl-wrap .row-actions button { padding: 6px 0; }
+    .tbl-wrap .section-label { margin: 0; border-radius: 0; }
   }
   @media (max-width: 380px) {
     .metrics { grid-template-columns: 1fr 1fr; }
     .metric { padding: 12px; }
+    .topbar-right { gap: 6px; }
+    .filter-btn { flex-basis: 100%; }
+    .modal { padding: 20px; }
+    .form-row { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -744,12 +774,12 @@
       : (!future && c.paid ? `<button class="pay-btn" onclick="togglePay('${c.id}')">Revertir</button>` : '');
 
     return `<tr class="${future ? 'future' : 'past'}">
-      <td class="date-cell">${fmtDate(c.date)}${c.time ? `<span class="time">${c.time}</span>` : ''}</td>
-      <td class="name-cell">${esc(c.studentName)}</td>
-      <td>${c.duration}h</td>
-      <td class="total-cell">${c.total.toFixed(2)}€</td>
-      <td>${badge}</td>
-      <td><div class="row-actions">
+      <td class="date-cell" data-label="Fecha">${fmtDate(c.date)}${c.time ? `<span class="time">${c.time}</span>` : ''}</td>
+      <td class="name-cell" data-label="Alumno">${esc(c.studentName)}</td>
+      <td data-label="Horas">${c.duration}h</td>
+      <td class="total-cell" data-label="Total">${c.total.toFixed(2)}€</td>
+      <td data-label="Estado">${badge}</td>
+      <td data-label="Acciones"><div class="row-actions">
         ${payBtn}
         <button onclick="openEditClass('${c.id}')">Editar</button>
         <button class="del-btn" onclick="deleteClass('${c.id}')">✕</button>
