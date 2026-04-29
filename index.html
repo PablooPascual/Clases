@@ -1,779 +1,922 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor de Clases - Control de Ingresos</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
-        .calendar-day { min-height: 100px; border: 1px solid #e2e8f0; transition: all 0.2s; }
-        .calendar-day:hover { background-color: #f1f5f9; }
-        .modal { transition: opacity 0.25s ease; }
-        .hidden { display: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mis Clases</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f13;
+    --bg2: #16161c;
+    --bg3: #1e1e27;
+    --bg4: #26262f;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #f0eff4;
+    --text2: #9996aa;
+    --text3: #5c5a6b;
+    --accent: #7c6cff;
+    --accent2: #5f52d6;
+    --accent-soft: rgba(124,108,255,0.12);
+    --green: #34d399;
+    --green-soft: rgba(52,211,153,0.1);
+    --amber: #fbbf24;
+    --amber-soft: rgba(251,191,36,0.1);
+    --red: #f87171;
+    --red-soft: rgba(248,113,113,0.08);
+    --blue: #60a5fa;
+    --blue-soft: rgba(96,165,250,0.1);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-xs: 6px;
+    --font: 'DM Sans', sans-serif;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% -10%, rgba(124,108,255,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 85% 100%, rgba(96,165,250,0.1) 0%, transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.015'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 16px 80px; }
+
+  /* TOPBAR */
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 0 24px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+  .logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .topbar-title { font-size: 16px; font-weight: 500; letter-spacing: -0.02em; }
+  .topbar-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  select.month-sel {
+    font-family: var(--font);
+    font-size: 13px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 7px 12px;
+    border-radius: var(--radius-sm);
+    outline: none;
+    cursor: pointer;
+    letter-spacing: -0.01em;
+  }
+  select.month-sel:focus { border-color: var(--accent); }
+
+  .btn {
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 400;
+    padding: 7px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border2);
+    background: var(--bg3);
+    color: var(--text2);
+    cursor: pointer;
+    transition: all .15s;
+    letter-spacing: -0.01em;
+  }
+  .btn:hover { background: var(--bg4); color: var(--text); border-color: var(--border2); }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 500;
+  }
+  .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+  .btn-sm { font-size: 12px; padding: 4px 10px; }
+
+  /* METRICS */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .metric {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .metric::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 2px 2px 0 0;
+  }
+  .metric.m-green::before { background: var(--green); }
+  .metric.m-amber::before { background: var(--amber); }
+  .metric.m-blue::before { background: var(--blue); }
+  .metric.m-purple::before { background: var(--accent); }
+  .metric-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 8px;
+  }
+  .metric-val {
+    font-size: 26px;
+    font-weight: 300;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .metric.m-green .metric-val { color: var(--green); }
+  .metric.m-amber .metric-val { color: var(--amber); }
+  .metric.m-blue .metric-val { color: var(--blue); }
+  .metric.m-purple .metric-val { color: var(--accent); }
+
+  /* LAYOUT MAIN */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 12px;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .card-head {
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .card-head-title {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+
+  /* FILTERS */
+  .filters { display: flex; gap: 4px; flex-wrap: wrap; }
+  .filter-btn {
+    font-family: var(--font);
+    font-size: 11px;
+    padding: 3px 10px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--text3);
+    cursor: pointer;
+    transition: all .15s;
+    letter-spacing: -0.01em;
+  }
+  .filter-btn:hover { color: var(--text2); border-color: var(--border2); }
+  .filter-btn.on { background: var(--accent-soft); border-color: var(--accent); color: #c5beff; }
+
+  /* TABLE */
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 480px; }
+  th {
+    padding: 8px 14px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text3);
+    background: var(--bg3);
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    white-space: nowrap;
+  }
+  td {
+    padding: 11px 14px;
+    font-size: 13px;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr.past td { opacity: .6; }
+  tr.past td .badge-pend { background: rgba(251,191,36,0.07); color: #8a7540; }
+  tr.future { background: rgba(124,108,255,0.03); }
+
+  .date-cell { color: var(--text3); font-size: 12px; white-space: nowrap; }
+  .date-cell .time { font-size: 11px; color: var(--text3); display: block; margin-top: 1px; }
+  .future .date-cell { color: var(--text2); }
+
+  .name-cell { font-weight: 500; }
+  .total-cell { font-weight: 500; font-variant-numeric: tabular-nums; }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 400;
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+    letter-spacing: 0;
+  }
+  .badge-paid { background: var(--green-soft); color: var(--green); }
+  .badge-pend { background: var(--amber-soft); color: var(--amber); }
+  .badge-future { background: var(--accent-soft); color: #c5beff; font-size: 10px; }
+
+  .tag-past {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-left: 4px;
+  }
+  .tag-future {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: #a89fff;
+    margin-left: 4px;
+  }
+
+  .row-actions { display: flex; gap: 10px; }
+  .row-actions button {
+    font-family: var(--font);
+    font-size: 11px;
+    background: none;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    padding: 0;
+    transition: color .12s;
+    letter-spacing: -0.01em;
+  }
+  .row-actions button:hover { color: var(--text); }
+  .row-actions button.pay-btn:hover { color: var(--green); }
+  .row-actions button.del-btn:hover { color: var(--red); }
+
+  .empty-row td {
+    text-align: center;
+    padding: 32px;
+    color: var(--text3);
+    font-size: 13px;
+  }
+
+  /* SIDEBAR */
+  .sidebar { display: flex; flex-direction: column; gap: 12px; }
+
+  .alumno-list { padding: 10px 12px; display: flex; flex-direction: column; gap: 5px; }
+  .alumno-item {
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--bg3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    transition: background .12s;
+  }
+  .alumno-item:hover { background: var(--bg4); }
+  .alumno-name { font-size: 13px; font-weight: 500; letter-spacing: -0.01em; color: var(--text); }
+  .alumno-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .alumno-debt { font-size: 12px; font-weight: 500; color: var(--amber); }
+  .alumno-ok { font-size: 12px; color: var(--green); }
+  .alumno-actions { display: flex; gap: 6px; margin-top: 4px; }
+
+  .debt-box {
+    padding: 14px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .debt-label {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text3);
+    margin-bottom: 4px;
+  }
+  .debt-val {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: -0.04em;
+    color: var(--amber);
+  }
+  .debt-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  /* MODALS */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    backdrop-filter: blur(4px);
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 24px;
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+  }
+  .modal h3 {
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: none;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    transition: color .12s;
+  }
+  .modal-close:hover { color: var(--text); }
+
+  .form-group { margin-bottom: 14px; }
+  .form-group label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-family: var(--font);
+    font-size: 13px;
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    outline: none;
+    transition: border-color .12s;
+    letter-spacing: -0.01em;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus { border-color: var(--accent); }
+  .form-group textarea { resize: vertical; min-height: 70px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .btn-full { width: 100%; margin-top: 6px; padding: 10px; font-size: 14px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--bg4);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 13px;
+    padding: 10px 20px;
+    border-radius: 20px;
+    opacity: 0;
+    transition: all .2s;
+    pointer-events: none;
+    z-index: 200;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* SECTION DIVIDER */
+  .section-label {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--text3);
+    padding: 8px 14px;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .section-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+  }
+  .dot-future { background: var(--accent); }
+  .dot-past { background: var(--text3); }
+
+  /* RESPONSIVE */
+  @media (max-width: 860px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .sidebar { flex-direction: row; flex-wrap: wrap; }
+    .sidebar .card { flex: 1 1 280px; }
+  }
+  @media (max-width: 520px) {
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .metric-val { font-size: 22px; }
+    .topbar-right { width: 100%; justify-content: flex-end; }
+    .btn { font-size: 12px; padding: 6px 11px; }
+  }
+  @media (max-width: 380px) {
+    .metrics { grid-template-columns: 1fr 1fr; }
+    .metric { padding: 12px; }
+  }
+</style>
 </head>
-<body class="text-slate-800">
+<body>
+<div class="wrap">
 
-    <!-- Navegación -->
-    <nav class="bg-indigo-600 text-white p-4 shadow-lg sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold flex items-center gap-2">
-                <i class="fas fa-graduation-cap"></i> Mis Clases
-            </h1>
-            <div class="flex gap-4">
-                <button onclick="showSection('dashboard')" class="hover:text-indigo-200"><i class="fas fa-chart-line"></i> Dashboard</button>
-                <button onclick="showSection('calendar')" class="hover:text-indigo-200"><i class="fas fa-calendar-alt"></i> Calendario</button>
-                <button onclick="showSection('students')" class="hover:text-indigo-200"><i class="fas fa-users"></i> Alumnos</button>
-            </div>
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo-dot"></div>
+      <span class="topbar-title">Mis clases</span>
+    </div>
+    <div class="topbar-right">
+      <select class="month-sel" id="monthSel"></select>
+      <button class="btn" onclick="openModal('studentModal')">+ Alumno</button>
+      <button class="btn btn-primary" onclick="openClassModal()">+ Clase</button>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric m-green">
+      <div class="metric-label">Cobrado</div>
+      <div class="metric-val" id="statIncome">0€</div>
+    </div>
+    <div class="metric m-amber">
+      <div class="metric-label">Pendiente</div>
+      <div class="metric-val" id="statPending">0€</div>
+    </div>
+    <div class="metric m-blue">
+      <div class="metric-label">Horas</div>
+      <div class="metric-val" id="statHours">0h</div>
+    </div>
+    <div class="metric m-purple">
+      <div class="metric-label">Clases</div>
+      <div class="metric-val" id="statCount">0</div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <div>
+      <div class="card">
+        <div class="card-head">
+          <span class="card-head-title">Clases</span>
+          <div class="filters">
+            <button class="filter-btn on" data-f="all">Todas</button>
+            <button class="filter-btn" data-f="pending">Pendientes</button>
+            <button class="filter-btn" data-f="paid">Pagadas</button>
+            <button class="filter-btn" data-f="future">Futuras</button>
+          </div>
         </div>
-    </nav>
-
-    <main class="max-w-6xl mx-auto p-4 md:p-8">
-
-        <!-- SECCIÓN: DASHBOARD -->
-        <section id="section-dashboard" class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-                    <div class="bg-green-100 p-4 rounded-full text-green-600"><i class="fas fa-euro-sign fa-2x"></i></div>
-                    <div>
-                        <p class="text-sm text-slate-500 font-medium">Ingresos Mes</p>
-                        <h2 id="stat-income" class="text-2xl font-bold">0€</h2>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-                    <div class="bg-blue-100 p-4 rounded-full text-blue-600"><i class="fas fa-clock fa-2x"></i></div>
-                    <div>
-                        <p class="text-sm text-slate-500 font-medium">Horas dadas</p>
-                        <h2 id="stat-hours" class="text-2xl font-bold">0h</h2>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-                    <div class="bg-orange-100 p-4 rounded-full text-orange-600"><i class="fas fa-hand-holding-usd fa-2x"></i></div>
-                    <div>
-                        <p class="text-sm text-slate-500 font-medium">Pendiente cobro</p>
-                        <h2 id="stat-pending" class="text-2xl font-bold">0€</h2>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mt-8">
-                <h3 class="text-xl font-bold">Últimas Clases</h3>
-                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                    <div class="flex items-center gap-2">
-                        <label for="input-group-by" class="text-sm text-slate-600 font-medium">Agrupar por</label>
-                        <select id="input-group-by" class="p-2 border border-slate-200 rounded-lg text-sm bg-white">
-                            <option value="none">Sin agrupar</option>
-                            <option value="week">Semana</option>
-                            <option value="month">Mes</option>
-                            <option value="student">Alumno</option>
-                        </select>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <input id="input-search-classes" placeholder="Buscar (alumno, fecha)" class="p-2 border border-slate-200 rounded-lg text-sm bg-white" />
-                    </div>
-                    <button id="btn-open-class-modal" onclick="openModal('classModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition">
-                        + Registrar Clase
-                    </button>
-                </div>
-            </div>
-
-            <div id="upcoming-classes" class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6"></div>
-
-            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-100">
-                <div class="overflow-x-auto">
-                <table class="w-full text-left min-w-[640px]">
-                    <thead class="bg-slate-50 border-b border-slate-100">
-                        <tr>
-                            <th class="p-4 text-sm font-semibold text-slate-600">Fecha</th>
-                            <th class="p-4 text-sm font-semibold text-slate-600">Alumno</th>
-                            <th class="p-4 text-sm font-semibold text-slate-600">Horas</th>
-                            <th class="p-4 text-sm font-semibold text-slate-600">Total</th>
-                            <th class="p-4 text-sm font-semibold text-slate-600">Estado</th>
-                            <th class="p-4 text-sm font-semibold text-slate-600">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recent-classes-body">
-                        <!-- Las clases se cargan aquí con JS -->
-                    </tbody>
-                </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECCIÓN: CALENDARIO -->
-        <section id="section-calendar" class="hidden space-y-4">
-            <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                <button onclick="prevMonth()" class="p-2 hover:bg-slate-100 rounded-full"><i class="fas fa-chevron-left"></i></button>
-                <h2 id="calendar-month-year" class="text-lg font-bold capitalize">Mes Año</h2>
-                <button onclick="nextMonth()" class="p-2 hover:bg-slate-100 rounded-full"><i class="fas fa-chevron-right"></i></button>
-            </div>
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                <div class="calendar-grid bg-slate-50 border-b text-center font-bold text-xs py-2 uppercase text-slate-500 tracking-wider">
-                    <div>Lun</div><div>Mar</div><div>Mie</div><div>Jue</div><div>Vie</div><div>Sab</div><div>Dom</div>
-                </div>
-                <div id="calendar-days" class="calendar-grid">
-                    <!-- Los días del calendario se cargan aquí -->
-                </div>
-            </div>
-        </section>
-
-        <!-- SECCIÓN: ALUMNOS -->
-        <section id="section-students" class="hidden space-y-6">
-            <div class="flex justify-between items-center">
-                <h3 class="text-xl font-bold">Mis Alumnos</h3>
-                <button onclick="openModal('studentModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium">
-                    + Nuevo Alumno
-                </button>
-            </div>
-            <div id="students-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Tarjetas de alumnos se cargan aquí -->
-            </div>
-        </section>
-    </main>
-
-    <!-- MODAL: REGISTRAR CLASE -->
-    <div id="classModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden z-[100] flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Registrar Nueva Clase</h3>
-                <button onclick="closeModal('classModal')" aria-label="Cerrar modal de clase" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
-            </div>
-            <form id="classForm" class="space-y-4">
-                <div>
-                    <label for="input-class-student" class="block text-sm font-medium mb-1">Alumno</label>
-                    <select id="input-class-student" class="w-full p-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" required></select>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="input-class-date" class="block text-sm font-medium mb-1">Fecha</label>
-                        <input type="date" id="input-class-date" class="w-full p-2 border border-slate-200 rounded-lg" required>
-                    </div>
-                    <div>
-                        <label for="input-class-time" class="block text-sm font-medium mb-1">Hora</label>
-                        <input type="time" id="input-class-time" class="w-full p-2 border border-slate-200 rounded-lg" required>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="input-class-duration" class="block text-sm font-medium mb-1">Duración (Horas)</label>
-                        <input type="number" step="0.5" min="0.5" id="input-class-duration" class="w-full p-2 border border-slate-200 rounded-lg" value="1" required>
-                    </div>
-                    <div>
-                        <label for="input-class-paid" class="block text-sm font-medium mb-1">Estado</label>
-                        <select id="input-class-paid" class="w-full p-2 border border-slate-200 rounded-lg">
-                            <option value="false">Pendiente</option>
-                            <option value="true">Pagado</option>
-                        </select>
-                    </div>
-                </div>
-                <button id="btn-save-class" type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition">Guardar Clase</button>
-            </form>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:90px">Fecha</th>
+                <th>Alumno</th>
+                <th style="width:55px">Horas</th>
+                <th style="width:65px">Total</th>
+                <th style="width:100px">Estado</th>
+                <th style="width:110px"></th>
+              </tr>
+            </thead>
+            <tbody id="classesBody"></tbody>
+          </table>
         </div>
+      </div>
     </div>
 
-    <!-- MODAL: NUEVO ALUMNO -->
-    <div id="studentModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden z-[100] flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Añadir Alumno</h3>
-                <button onclick="closeModal('studentModal')" aria-label="Cerrar modal de alumno" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
-            </div>
-            <form id="studentForm" class="space-y-4">
-                <div>
-                    <label for="input-student-name" class="block text-sm font-medium mb-1">Nombre Completo</label>
-                    <input type="text" id="input-student-name" class="w-full p-2 border border-slate-200 rounded-lg" placeholder="Ej: Juanito Pérez" required>
-                </div>
-                <div>
-                    <label for="input-student-rate" class="block text-sm font-medium mb-1">Precio por Hora (€)</label>
-                    <input type="number" step="0.5" min="0" id="input-student-rate" class="w-full p-2 border border-slate-200 rounded-lg" placeholder="Ej: 15" required>
-                </div>
-                <div>
-                    <label for="input-student-notes" class="block text-sm font-medium mb-1">Notas (opcional)</label>
-                    <textarea id="input-student-notes" class="w-full p-2 border border-slate-200 rounded-lg" placeholder="Ej: Nivel 3º Primaria, refuerzo mates"></textarea>
-                </div>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition">Añadir Alumno</button>
-            </form>
+    <div class="sidebar">
+      <div class="card" style="flex:1">
+        <div class="card-head">
+          <span class="card-head-title">Alumnos</span>
+          <span id="studentCount" style="font-size:11px;color:var(--text3)">0 activos</span>
         </div>
+        <div class="alumno-list" id="studentsList"></div>
+        <div class="debt-box">
+          <div class="debt-label">Deuda total</div>
+          <div class="debt-val" id="totalDebt">0€</div>
+          <div class="debt-sub" id="totalDebtSub">Sin saldo pendiente</div>
+        </div>
+      </div>
     </div>
-
-    <script>
-        // --- BASE DE DATOS LOCAL (SIMULADA) ---
-        function getStorageArray(key) {
-            try {
-                const raw = localStorage.getItem(key);
-                const parsed = raw ? JSON.parse(raw) : [];
-                return Array.isArray(parsed) ? parsed : [];
-            } catch {
-                return [];
-            }
-        }
-
-        function escapeHTML(value) {
-            return String(value ?? '')
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-
-        let students = getStorageArray('students');
-        let classes = getStorageArray('classes');
-
-        function normalizePaid(value) {
-            if (typeof value === 'boolean') return value;
-            if (typeof value === 'string') return value.toLowerCase() === 'true';
-            return Boolean(value);
-        }
-
-        // Normaliza datos guardados para evitar estados visuales incorrectos.
-        students = students.map(s => ({
-            ...s,
-            rate: Number(s.rate) || 0
-        }));
-
-        classes = classes.map(c => ({
-            ...c,
-            duration: Number(c.duration) || 0,
-            rate: Number(c.rate) || 0,
-            total: Number(c.total) || 0,
-            paid: normalizePaid(c.paid),
-            scheduled: Boolean(c.scheduled)
-        }));
-        
-        // UI state
-        let showAllRecent = false;
-        let editingClassId = null;
-        
-        let currentMonth = new Date().getMonth();
-        let currentYear = new Date().getFullYear();
-
-        // --- INICIALIZACIÓN ---
-        window.onload = () => {
-            updateDashboard();
-            updateStudentDropdown();
-            syncClassFormAvailability();
-            renderCalendar();
-            renderStudents();
-            showSection('dashboard');
-
-            const groupBySelect = document.getElementById('input-group-by');
-            groupBySelect.addEventListener('change', () => {
-                renderRecentClasses();
-            });
-            const searchInput = document.getElementById('input-search-classes');
-            if (searchInput) {
-                searchInput.addEventListener('input', () => renderRecentClasses());
-            }
-        };
-
-        // --- FUNCIONES DE NAVEGACIÓN ---
-        function showSection(sectionId) {
-            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
-            document.getElementById(`section-${sectionId}`).classList.remove('hidden');
-        }
-
-        function openModal(id) {
-            if (id === 'classModal' && students.length === 0) {
-                alert('Primero añade al menos un alumno para registrar clases.');
-                return;
-            }
-            // Si abrimos el modal de clase sin estar en modo edición, restablecer estado
-            if (id === 'classModal' && !editingClassId) {
-                const form = document.getElementById('classForm');
-                form.reset();
-                document.getElementById('classModal').querySelector('h3').innerText = 'Registrar Nueva Clase';
-                document.getElementById('btn-save-class').innerText = 'Guardar Clase';
-            }
-            document.getElementById(id).classList.remove('hidden');
-        }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-        // Cerrar modales pulsando ESC.
-        document.addEventListener('keydown', (e) => {
-            if (e.key !== 'Escape') return;
-            closeModal('classModal');
-            closeModal('studentModal');
-        });
-
-        // --- FUNCIONES DE ALUMNOS ---
-        document.getElementById('studentForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const newStudent = {
-                id: Date.now().toString(),
-                name: document.getElementById('input-student-name').value,
-                rate: parseFloat(document.getElementById('input-student-rate').value),
-                notes: document.getElementById('input-student-notes').value
-            };
-            students.push(newStudent);
-            saveData();
-            updateStudentDropdown();
-            syncClassFormAvailability();
-            renderStudents();
-            closeModal('studentModal');
-            e.target.reset();
-        });
-
-        function renderStudents() {
-            const grid = document.getElementById('students-grid');
-            grid.innerHTML = students.length === 0 ? '<p class="col-span-full text-center text-slate-400 py-10">Aún no tienes alumnos registrados.</p>' : '';
-            students.forEach(s => {
-                const safeName = escapeHTML(s.name);
-                const safeNotes = escapeHTML(s.notes || 'Sin notas adicionales');
-                grid.innerHTML += `
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h4 class="font-bold text-lg">${safeName}</h4>
-                                <span class="text-indigo-600 font-semibold text-sm">${s.rate}€/hora</span>
-                            </div>
-                            <button onclick="deleteStudent('${s.id}')" aria-label="Eliminar alumno" class="text-slate-300 hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
-                        </div>
-                        <p class="text-slate-500 text-sm italic">"${safeNotes}"</p>
-                    </div>
-                `;
-            });
-        }
-
-        function deleteStudent(id) {
-            if(confirm('¿Seguro? Se borrarán también sus registros de clases.')) {
-                students = students.filter(s => s.id !== id);
-                classes = classes.filter(c => c.studentId !== id);
-                saveData();
-                renderStudents();
-                updateDashboard();
-                updateStudentDropdown();
-                syncClassFormAvailability();
-                renderCalendar();
-            }
-        }
-
-        function updateStudentDropdown() {
-            const select = document.getElementById('input-class-student');
-            if (students.length === 0) {
-                select.innerHTML = '<option value="" disabled selected>No hay alumnos disponibles</option>';
-                return;
-            }
-            select.innerHTML = students.map(s => `<option value="${s.id}">${escapeHTML(s.name)}</option>`).join('');
-        }
-
-        function syncClassFormAvailability() {
-            const openBtn = document.getElementById('btn-open-class-modal');
-            const saveBtn = document.getElementById('btn-save-class');
-            const studentSelect = document.getElementById('input-class-student');
-
-            const hasStudents = students.length > 0;
-            if (openBtn) {
-                openBtn.disabled = !hasStudents;
-                openBtn.classList.toggle('opacity-60', !hasStudents);
-                openBtn.classList.toggle('cursor-not-allowed', !hasStudents);
-            }
-            if (saveBtn) saveBtn.disabled = !hasStudents;
-            if (studentSelect) studentSelect.disabled = !hasStudents;
-        }
-
-        // --- FUNCIONES DE CLASES ---
-        document.getElementById('classForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const studentId = document.getElementById('input-class-student').value;
-            const student = students.find(s => s.id === studentId);
-            if (!student) {
-                alert('Selecciona un alumno válido antes de guardar la clase.');
-                return;
-            }
-            const duration = parseFloat(document.getElementById('input-class-duration').value);
-            if (!Number.isFinite(duration) || duration <= 0) {
-                alert('La duración debe ser mayor de 0.');
-                return;
-            }
-            const classData = {
-                studentId: studentId,
-                studentName: student.name,
-                date: document.getElementById('input-class-date').value,
-                time: document.getElementById('input-class-time').value,
-                duration: duration,
-                rate: student.rate,
-                total: duration * student.rate,
-                paid: document.getElementById('input-class-paid').value === "true"
-            };
-
-            if (editingClassId) {
-                const idx = classes.findIndex(c => c.id === editingClassId);
-                if (idx !== -1) {
-                    classes[idx] = { ...classes[idx], ...classData };
-                }
-                editingClassId = null;
-                document.getElementById('classModal').querySelector('h3').innerText = 'Registrar Nueva Clase';
-                document.getElementById('btn-save-class').innerText = '+ Guardar Clase';
-            } else {
-                const newClass = { id: Date.now().toString(), scheduled: false, ...classData };
-                classes.push(newClass);
-            }
-
-            saveData();
-            updateDashboard();
-            renderCalendar();
-            closeModal('classModal');
-            e.target.reset();
-        });
-
-        function updateDashboard() {
-            const now = new Date();
-            const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-            
-            const monthClasses = classes.filter(c => c.date.startsWith(currentMonthStr));
-            
-            const totalIncome = monthClasses.filter(c => c.paid).reduce((sum, c) => sum + c.total, 0);
-            const totalHours = monthClasses.reduce((sum, c) => sum + c.duration, 0);
-            const pendingIncome = monthClasses.filter(c => !c.paid).reduce((sum, c) => sum + c.total, 0);
-
-            document.getElementById('stat-income').innerText = `${totalIncome.toFixed(2)}€`;
-            document.getElementById('stat-hours').innerText = `${totalHours}h`;
-            document.getElementById('stat-pending').innerText = `${pendingIncome.toFixed(2)}€`;
-
-            renderRecentClasses();
-            renderUpcomingClasses();
-        }
-
-        function renderUpcomingClasses() {
-            const container = document.getElementById('upcoming-classes');
-            container.innerHTML = '';
-            const today = new Date();
-            today.setHours(0,0,0,0);
-            const upcoming = [...classes]
-                .filter(c => {
-                    const d = parseDateString(c.date);
-                    return d && d >= today;
-                })
-                .sort((a,b) => `${a.date}T${a.time || '00:00'}`.localeCompare(`${b.date}T${b.time || '00:00'}`))
-                .slice(0,3);
-
-            if (upcoming.length === 0) {
-                container.innerHTML = '<div class="col-span-full bg-white p-4 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400">No hay próximas clases.</div>';
-                return;
-            }
-
-            upcoming.forEach(c => {
-                const student = students.find(s => s.id === c.studentId) || {};
-                container.innerHTML += `
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-bold">${escapeHTML(c.studentName)}</h4>
-                                <div class="text-sm text-slate-500">${formatDate(c.date)} ${c.time || ''} · ${c.duration}h</div>
-                            </div>
-                            <div class="text-right">
-                                <div class="font-bold text-indigo-600">${c.total.toFixed(2)}€</div>
-                                ${c.scheduled && isFutureDate(c.date) ? '<div class="text-xs text-indigo-700 mt-1">Programada</div>' : ''}
-                            </div>
-                        </div>
-                        <div class="mt-3 flex gap-2 justify-end">
-                            <button onclick="openEditClass('${c.id}')" class="text-indigo-600 hover:underline">Editar</button>
-                            ${isFutureDate(c.date) ? `<button onclick="toggleSchedule('${c.id}')" class="text-indigo-600 hover:underline">${c.scheduled ? 'Cancelar' : 'Programar'}</button>` : ''}
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function renderRecentClasses() {
-            const tbody = document.getElementById('recent-classes-body');
-            tbody.innerHTML = '';
-
-            const sorted = [...classes]
-                .sort((a, b) => `${b.date}T${b.time || '00:00'}`.localeCompare(`${a.date}T${a.time || '00:00'}`));
-
-            // Filtrar por búsqueda
-            const searchTerm = document.getElementById('input-search-classes')?.value?.trim().toLowerCase() || '';
-            let filtered = sorted;
-            if (searchTerm) {
-                filtered = sorted.filter(c => {
-                    const student = (c.studentName || '').toLowerCase();
-                    const dateFormatted = (formatDate(c.date) || '').toLowerCase();
-                    return student.includes(searchTerm) || c.date.includes(searchTerm) || dateFormatted.includes(searchTerm);
-                });
-            }
-
-            if (sorted.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-400">Aún no hay clases registradas.</td></tr>';
-                return;
-            }
-
-            const groupBy = document.getElementById('input-group-by')?.value || 'none';
-
-            if (groupBy === 'none') {
-                const limit = showAllRecent ? filtered.length : 5;
-                filtered.slice(0, limit).forEach(c => {
-                    tbody.innerHTML += renderClassRow(c);
-                });
-
-                if (sorted.length > 5) {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td colspan="6" class="p-3 text-center">
-                                <button onclick="toggleShowMore()" class="text-indigo-600 hover:underline">${showAllRecent ? 'Mostrar menos' : 'Mostrar más'}</button>
-                            </td>
-                        </tr>
-                    `;
-                }
-                return;
-            }
-
-            const grouped = new Map();
-
-            filtered.forEach(c => {
-                const meta = getGroupingMeta(c, groupBy);
-                if (!grouped.has(meta.key)) {
-                    grouped.set(meta.key, {
-                        label: meta.label,
-                        items: [],
-                        hours: 0,
-                        total: 0
-                    });
-                }
-
-                const group = grouped.get(meta.key);
-                group.items.push(c);
-                group.hours += Number(c.duration) || 0;
-                group.total += Number(c.total) || 0;
-            });
-
-            grouped.forEach(group => {
-                tbody.innerHTML += `
-                    <tr class="bg-slate-100/80 border-y border-slate-200">
-                        <td colspan="6" class="p-3">
-                            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-1">
-                                <span class="font-semibold text-slate-700">${escapeHTML(group.label)}</span>
-                                <span class="text-xs text-slate-500">${group.items.length} clases · ${formatHours(group.hours)}h · ${group.total.toFixed(2)}€</span>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-
-                group.items.forEach(c => {
-                    tbody.innerHTML += renderClassRow(c);
-                });
-            });
-        }
-
-        function renderClassRow(c) {
-            const safeStudentName = escapeHTML(c.studentName);
-            return `
-                <tr class="border-b border-slate-50 hover:bg-slate-50">
-                    <td class="p-3 text-sm">${formatDate(c.date)}</td>
-                    <td class="p-3 font-medium">${safeStudentName}</td>
-                    <td class="p-3 text-sm">${c.duration}h</td>
-                    <td class="p-3 font-bold text-indigo-600">${c.total.toFixed(2)}€</td>
-                    <td class="p-3">
-                        <div class="flex items-center gap-2">
-                            <span class="px-2 py-1 rounded-full text-xs font-bold ${c.paid ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}">${c.paid ? 'Pagado' : 'Pendiente'}</span>
-                            ${c.scheduled && isFutureDate(c.date) ? '<span class="px-2 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700">Programada</span>' : ''}
-                        </div>
-                    </td>
-                    <td class="p-3">
-                        <div class="flex gap-3 text-slate-400 items-center">
-                            <button onclick="openEditClass('${c.id}')" title="Editar" aria-label="Editar clase" class="hover:text-indigo-500"><i class="fas fa-edit"></i></button>
-                            ${isFutureDate(c.date) ? `<button onclick="toggleSchedule('${c.id}')" title="Programar/Cancelar" aria-label="Programar clase" class="hover:text-indigo-500"><i class="fas fa-calendar-check"></i></button>` : ''}
-                            <button onclick="togglePayment('${c.id}')" title="Marcar pagado/pendiente" aria-label="Cambiar estado de pago"><i class="fas fa-sync-alt hover:text-indigo-500"></i></button>
-                            <button onclick="deleteClass('${c.id}')" title="Eliminar" aria-label="Eliminar clase"><i class="fas fa-trash hover:text-red-500"></i></button>
-                        </div>
-                    </td>
-                </tr>
-            `;
-        }
-
-        function toggleShowMore() {
-            showAllRecent = !showAllRecent;
-            renderRecentClasses();
-        }
-
-        function isFutureDate(dateStr) {
-            const d = parseDateString(dateStr);
-            if (!d) return false;
-            const today = new Date();
-            today.setHours(0,0,0,0);
-            return d > today;
-        }
-
-        function openEditClass(id) {
-            const c = classes.find(x => x.id === id);
-            if (!c) return alert('Clase no encontrada.');
-            editingClassId = id;
-            document.getElementById('input-class-student').value = c.studentId;
-            document.getElementById('input-class-date').value = c.date;
-            document.getElementById('input-class-time').value = c.time || '';
-            document.getElementById('input-class-duration').value = c.duration;
-            document.getElementById('input-class-paid').value = c.paid ? 'true' : 'false';
-            document.getElementById('classModal').querySelector('h3').innerText = 'Editar Clase';
-            document.getElementById('btn-save-class').innerText = 'Guardar Cambios';
-            openModal('classModal');
-        }
-
-        function toggleSchedule(id) {
-            const idx = classes.findIndex(c => c.id === id);
-            if (idx === -1) return;
-            const c = classes[idx];
-            if (!isFutureDate(c.date)) return alert('Solo se pueden programar clases con fecha futura.');
-            c.scheduled = !Boolean(c.scheduled);
-            saveData();
-            renderRecentClasses();
-            renderCalendar();
-        }
-
-        function getGroupingMeta(classItem, groupBy) {
-            if (groupBy === 'student') {
-                const name = classItem.studentName || 'Alumno sin nombre';
-                return {
-                    key: `student-${name.toLowerCase()}`,
-                    label: `Alumno: ${name}`
-                };
-            }
-
-            const date = parseDateString(classItem.date);
-            if (!date) {
-                return { key: `unknown-${groupBy}`, label: 'Fecha no válida' };
-            }
-
-            if (groupBy === 'month') {
-                return {
-                    key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
-                    label: date.toLocaleDateString('es', { month: 'long', year: 'numeric' })
-                };
-            }
-
-            const start = startOfWeek(date);
-            const end = new Date(start);
-            end.setDate(start.getDate() + 6);
-            const weekNumber = getISOWeekNumber(date);
-            return {
-                key: `week-${toYMD(start)}`,
-                label: `Semana ${weekNumber} (${formatShortDate(start)} - ${formatShortDate(end)})`
-            };
-        }
-
-        function parseDateString(dateStr) {
-            const [year, month, day] = (dateStr || '').split('-').map(Number);
-            if (!year || !month || !day) return null;
-            return new Date(year, month - 1, day);
-        }
-
-        function startOfWeek(date) {
-            const weekStart = new Date(date);
-            const day = (weekStart.getDay() + 6) % 7;
-            weekStart.setDate(weekStart.getDate() - day);
-            weekStart.setHours(0, 0, 0, 0);
-            return weekStart;
-        }
-
-        function toYMD(date) {
-            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-        }
-
-        function formatShortDate(date) {
-            return date.toLocaleDateString('es', { day: 'numeric', month: 'short' });
-        }
-
-        function getISOWeekNumber(date) {
-            const tempDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-            const dayNum = (tempDate.getDay() + 6) % 7;
-            tempDate.setDate(tempDate.getDate() - dayNum + 3);
-            const firstThursday = new Date(tempDate.getFullYear(), 0, 4);
-            const firstThursdayDayNum = (firstThursday.getDay() + 6) % 7;
-            firstThursday.setDate(firstThursday.getDate() - firstThursdayDayNum + 3);
-            const diffMs = tempDate - firstThursday;
-            return 1 + Math.round(diffMs / 604800000);
-        }
-
-        function formatHours(value) {
-            return Number(value).toFixed(1).replace(/\.0$/, '');
-        }
-
-        function togglePayment(id) {
-            const index = classes.findIndex(c => c.id === id);
-            if (index === -1) return;
-            classes[index].paid = !normalizePaid(classes[index].paid);
-            saveData();
-            updateDashboard();
-            renderCalendar();
-        }
-
-        function deleteClass(id) {
-            classes = classes.filter(c => c.id !== id);
-            saveData();
-            updateDashboard();
-            renderCalendar();
-        }
-
-        // --- FUNCIONES CALENDARIO ---
-        function renderCalendar() {
-            const container = document.getElementById('calendar-days');
-            const monthLabel = document.getElementById('calendar-month-year');
-            container.innerHTML = '';
-
-            const date = new Date(currentYear, currentMonth, 1);
-            const monthName = date.toLocaleString('es', { month: 'long' });
-            monthLabel.innerText = `${monthName} ${currentYear}`;
-
-            // Ajuste inicio de semana (Lunes = 1, Domingo = 0)
-            let startDay = date.getDay();
-            startDay = startDay === 0 ? 6 : startDay - 1;
-
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-
-            // Espacios vacíos antes del primer día
-            for (let i = 0; i < startDay; i++) {
-                container.innerHTML += `<div class="calendar-day bg-slate-50/50"></div>`;
-            }
-
-            // Días del mes
-            for (let d = 1; d <= daysInMonth; d++) {
-                const fullDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                const dayClasses = classes.filter(c => c.date === fullDate);
-                const dailyTotal = dayClasses.reduce((sum, c) => sum + c.total, 0);
-
-                container.innerHTML += `
-                    <div class="calendar-day p-2">
-                        <span class="text-xs font-bold text-slate-400">${d}</span>
-                        <div class="mt-1 space-y-1">
-                            ${dayClasses.map(c => `
-                                <div class="text-[10px] leading-tight p-1 rounded ${c.paid ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-700'} truncate" title="${escapeHTML(c.studentName)}: ${c.total}€">
-                                    ${escapeHTML(c.studentName)}
-                                </div>
-                            `).join('')}
-                            ${dailyTotal > 0 ? `<div class="text-[10px] font-bold text-indigo-600 mt-1">Total: ${dailyTotal}€</div>` : ''}
-                        </div>
-                    </div>
-                `;
-            }
-        }
-
-        function prevMonth() { 
-            currentMonth--; 
-            if(currentMonth < 0) { currentMonth = 11; currentYear--; } 
-            renderCalendar(); 
-        }
-        function nextMonth() { 
-            currentMonth++; 
-            if(currentMonth > 11) { currentMonth = 0; currentYear++; } 
-            renderCalendar(); 
-        }
-
-        // --- AUXILIARES ---
-        function saveData() {
-            localStorage.setItem('students', JSON.stringify(students));
-            localStorage.setItem('classes', JSON.stringify(classes));
-        }
-
-        function formatDate(dateStr) {
-            const options = { day: 'numeric', month: 'short' };
-            const [year, month, day] = (dateStr || '').split('-').map(Number);
-            if (!year || !month || !day) return dateStr;
-            return new Date(year, month - 1, day).toLocaleDateString('es', options);
-        }
-    </script>
+  </div>
+</div>
+
+<!-- MODAL CLASE -->
+<div class="overlay" id="classModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('classModal')">✕</button>
+    <h3 id="classModalTitle">Nueva clase</h3>
+    <input type="hidden" id="editId">
+    <div class="form-group">
+      <label>Alumno</label>
+      <select id="fStudent"></select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Fecha</label>
+        <input type="date" id="fDate">
+      </div>
+      <div class="form-group">
+        <label>Hora</label>
+        <input type="time" id="fTime">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Duración (h)</label>
+        <input type="number" id="fDuration" step="0.5" min="0.5" value="1">
+      </div>
+      <div class="form-group">
+        <label>Estado</label>
+        <select id="fPaid">
+          <option value="false">Pendiente</option>
+          <option value="true">Pagado</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="saveClass()">Guardar</button>
+  </div>
+</div>
+
+<!-- MODAL ALUMNO -->
+<div class="overlay" id="studentModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('studentModal')">✕</button>
+    <h3>Nuevo alumno</h3>
+    <div class="form-group">
+      <label>Nombre</label>
+      <input type="text" id="sName" placeholder="Ej: María García">
+    </div>
+    <div class="form-group">
+      <label>Precio / hora (€)</label>
+      <input type="number" id="sRate" step="0.5" min="0" placeholder="Ej: 15">
+    </div>
+    <div class="form-group">
+      <label>Notas</label>
+      <textarea id="sNotes" placeholder="Nivel, asignatura..."></textarea>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="saveStudent()">Añadir alumno</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // --- DATA ---
+  function load(k) {
+    try { const r = localStorage.getItem(k); const p = r ? JSON.parse(r) : []; return Array.isArray(p) ? p : []; }
+    catch { return []; }
+  }
+  function save() {
+    localStorage.setItem('mc_students', JSON.stringify(students));
+    localStorage.setItem('mc_classes', JSON.stringify(classes));
+  }
+  function norm(v) {
+    if (typeof v === 'boolean') return v;
+    return String(v).toLowerCase() === 'true';
+  }
+  function esc(v) {
+    return String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  let students = load('mc_students').map(s => ({ ...s, rate: Number(s.rate) || 0 }));
+  let classes  = load('mc_classes').map(c => ({ ...c, duration: Number(c.duration)||0, total: Number(c.total)||0, paid: norm(c.paid) }));
+
+  // --- MONTH SELECTOR ---
+  let selMonth, selYear;
+  (function initMonth() {
+    const now = new Date();
+    selMonth = now.getMonth(); selYear = now.getFullYear();
+    const sel = document.getElementById('monthSel');
+    const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    for (let y = now.getFullYear(); y >= now.getFullYear() - 2; y--) {
+      for (let m = (y === now.getFullYear() ? now.getMonth() : 11); m >= 0; m--) {
+        const o = document.createElement('option');
+        o.value = `${y}-${m}`;
+        o.textContent = `${months[m]} ${y}`;
+        if (y === now.getFullYear() && m === now.getMonth()) o.selected = true;
+        sel.appendChild(o);
+      }
+    }
+    sel.addEventListener('change', () => {
+      const [y, m] = sel.value.split('-').map(Number);
+      selYear = y; selMonth = m;
+      render();
+    });
+  })();
+
+  // --- DATE HELPERS ---
+  function parseDate(s) {
+    const [y,m,d] = (s||'').split('-').map(Number);
+    if (!y||!m||!d) return null;
+    return new Date(y, m-1, d);
+  }
+  function todayMidnight() { const d = new Date(); d.setHours(0,0,0,0); return d; }
+  function isFuture(s) { const d = parseDate(s); return d && d > todayMidnight(); }
+  function isToday(s) { const d = parseDate(s); if (!d) return false; const t = todayMidnight(); return d.getTime() === t.getTime(); }
+  function fmtDate(s) {
+    const d = parseDate(s); if (!d) return s;
+    return d.toLocaleDateString('es', { day: 'numeric', month: 'short' });
+  }
+
+  // --- MONTH FILTER ---
+  function inSelMonth(c) {
+    return c.date && c.date.startsWith(`${selYear}-${String(selMonth+1).padStart(2,'0')}`);
+  }
+
+  // --- RENDER METRICS ---
+  function renderMetrics() {
+    const mc = classes.filter(inSelMonth);
+    const income  = mc.filter(c => c.paid).reduce((s,c) => s + c.total, 0);
+    const pending = mc.filter(c => !c.paid).reduce((s,c) => s + c.total, 0);
+    const hours   = mc.reduce((s,c) => s + c.duration, 0);
+    document.getElementById('statIncome').textContent  = income.toFixed(2) + '€';
+    document.getElementById('statPending').textContent = pending.toFixed(2) + '€';
+    document.getElementById('statHours').textContent   = (Number.isInteger(hours) ? hours : hours.toFixed(1)) + 'h';
+    document.getElementById('statCount').textContent   = mc.length;
+  }
+
+  // --- RENDER CLASSES ---
+  let activeFilter = 'all';
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      activeFilter = btn.dataset.f;
+      renderClasses();
+    });
+  });
+
+  function renderClasses() {
+    const tbody = document.getElementById('classesBody');
+    tbody.innerHTML = '';
+
+    let list = classes.filter(inSelMonth);
+    if (activeFilter === 'pending') list = list.filter(c => !c.paid);
+    if (activeFilter === 'paid')    list = list.filter(c => c.paid);
+    if (activeFilter === 'future')  list = list.filter(c => isFuture(c.date) || isToday(c.date));
+
+    list.sort((a,b) => {
+      const da = `${a.date}T${a.time||'00:00'}`, db = `${b.date}T${b.time||'00:00'}`;
+      return db.localeCompare(da);
+    });
+
+    if (!list.length) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Sin clases para este período.</td></tr>';
+      return;
+    }
+
+    const futureItems = list.filter(c => isFuture(c.date) || isToday(c.date)).reverse();
+    const pastItems   = list.filter(c => !isFuture(c.date) && !isToday(c.date));
+
+    if (futureItems.length) {
+      tbody.innerHTML += `<tr><td colspan="6" class="section-label"><span class="section-dot dot-future"></span>Próximas</td></tr>`;
+      futureItems.forEach(c => tbody.innerHTML += classRow(c, true));
+    }
+    if (pastItems.length) {
+      tbody.innerHTML += `<tr><td colspan="6" class="section-label"><span class="section-dot dot-past"></span>Realizadas</td></tr>`;
+      pastItems.forEach(c => tbody.innerHTML += classRow(c, false));
+    }
+  }
+
+  function classRow(c, future) {
+    const badge = future
+      ? `<span class="badge badge-future">Próxima</span>`
+      : (c.paid ? `<span class="badge badge-paid">Pagado</span>` : `<span class="badge badge-pend">Pendiente</span>`);
+
+    const payBtn = (!future && !c.paid)
+      ? `<button class="pay-btn" onclick="togglePay('${c.id}')">Cobrar</button>`
+      : (!future && c.paid ? `<button class="pay-btn" onclick="togglePay('${c.id}')">Revertir</button>` : '');
+
+    return `<tr class="${future ? 'future' : 'past'}">
+      <td class="date-cell">${fmtDate(c.date)}${c.time ? `<span class="time">${c.time}</span>` : ''}</td>
+      <td class="name-cell">${esc(c.studentName)}</td>
+      <td>${c.duration}h</td>
+      <td class="total-cell">${c.total.toFixed(2)}€</td>
+      <td>${badge}</td>
+      <td><div class="row-actions">
+        ${payBtn}
+        <button onclick="openEditClass('${c.id}')">Editar</button>
+        <button class="del-btn" onclick="deleteClass('${c.id}')">✕</button>
+      </div></td>
+    </tr>`;
+  }
+
+  // --- RENDER STUDENTS SIDEBAR ---
+  function renderStudents() {
+    const list = document.getElementById('studentsList');
+    const cnt  = document.getElementById('studentCount');
+    list.innerHTML = '';
+    cnt.textContent = students.length + ' activo' + (students.length !== 1 ? 's' : '');
+
+    if (!students.length) {
+      list.innerHTML = '<div style="padding:16px;font-size:12px;color:var(--text3);text-align:center">Sin alumnos todavía.</div>';
+      document.getElementById('totalDebt').textContent = '0€';
+      document.getElementById('totalDebtSub').textContent = 'Sin saldo pendiente';
+      return;
+    }
+
+    let totalDebt = 0, debtors = 0;
+    students.forEach(s => {
+      const debt = classes.filter(c => c.studentId === s.id && !c.paid).reduce((sum,c) => sum + c.total, 0);
+      const total = classes.filter(c => c.studentId === s.id).length;
+      if (debt > 0) { totalDebt += debt; debtors++; }
+      list.innerHTML += `
+        <div class="alumno-item">
+          <div>
+            <div class="alumno-name">${esc(s.name)}</div>
+            <div class="alumno-sub">${s.rate}€/h · ${total} clase${total !== 1 ? 's' : ''}</div>
+          </div>
+          <div style="text-align:right">
+            ${debt > 0 ? `<div class="alumno-debt">${debt.toFixed(2)}€</div>` : `<div class="alumno-ok">Al día</div>`}
+            <button class="btn btn-sm" style="margin-top:4px;font-size:10px;padding:2px 8px" onclick="deleteStudent('${s.id}')">Borrar</button>
+          </div>
+        </div>`;
+    });
+
+    document.getElementById('totalDebt').textContent = totalDebt.toFixed(2) + '€';
+    document.getElementById('totalDebtSub').textContent = debtors > 0
+      ? `${debtors} alumno${debtors !== 1 ? 's' : ''} con saldo pendiente`
+      : 'Sin saldo pendiente';
+  }
+
+  function render() { renderMetrics(); renderClasses(); renderStudents(); }
+
+  // --- STUDENT DROPDOWN ---
+  function updateDropdown() {
+    const sel = document.getElementById('fStudent');
+    if (!students.length) {
+      sel.innerHTML = '<option value="">Sin alumnos</option>';
+      return;
+    }
+    sel.innerHTML = students.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  }
+
+  // --- MODALS ---
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('.overlay').forEach(el => {
+    el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.querySelectorAll('.overlay.open').forEach(el => el.classList.remove('open'));
+  });
+
+  function openClassModal() {
+    if (!students.length) { toast('Añade un alumno primero.'); return; }
+    document.getElementById('editId').value = '';
+    document.getElementById('classModalTitle').textContent = 'Nueva clase';
+    document.getElementById('fDate').value = new Date().toISOString().slice(0,10);
+    document.getElementById('fTime').value = '';
+    document.getElementById('fDuration').value = '1';
+    document.getElementById('fPaid').value = 'false';
+    updateDropdown();
+    openModal('classModal');
+  }
+
+  function openEditClass(id) {
+    const c = classes.find(x => x.id === id); if (!c) return;
+    document.getElementById('editId').value = id;
+    document.getElementById('classModalTitle').textContent = 'Editar clase';
+    updateDropdown();
+    document.getElementById('fStudent').value  = c.studentId;
+    document.getElementById('fDate').value     = c.date;
+    document.getElementById('fTime').value     = c.time || '';
+    document.getElementById('fDuration').value = c.duration;
+    document.getElementById('fPaid').value     = c.paid ? 'true' : 'false';
+    openModal('classModal');
+  }
+
+  // --- SAVE CLASS ---
+  function saveClass() {
+    const studentId = document.getElementById('fStudent').value;
+    const student   = students.find(s => s.id === studentId);
+    if (!student) { toast('Selecciona un alumno.'); return; }
+    const duration = parseFloat(document.getElementById('fDuration').value);
+    if (!duration || duration <= 0) { toast('Duración inválida.'); return; }
+    const date = document.getElementById('fDate').value;
+    if (!date) { toast('Indica la fecha.'); return; }
+
+    const data = {
+      studentId, studentName: student.name,
+      date, time: document.getElementById('fTime').value,
+      duration, rate: student.rate, total: duration * student.rate,
+      paid: document.getElementById('fPaid').value === 'true'
+    };
+
+    const editId = document.getElementById('editId').value;
+    if (editId) {
+      const idx = classes.findIndex(c => c.id === editId);
+      if (idx !== -1) classes[idx] = { ...classes[idx], ...data };
+    } else {
+      classes.push({ id: Date.now().toString(), ...data });
+    }
+    save(); render(); closeModal('classModal');
+    toast(editId ? 'Clase actualizada.' : 'Clase registrada.');
+  }
+
+  // --- SAVE STUDENT ---
+  function saveStudent() {
+    const name = document.getElementById('sName').value.trim();
+    const rate = parseFloat(document.getElementById('sRate').value);
+    if (!name) { toast('Escribe un nombre.'); return; }
+    if (!rate || rate < 0) { toast('Precio inválido.'); return; }
+    students.push({ id: Date.now().toString(), name, rate, notes: document.getElementById('sNotes').value });
+    document.getElementById('sName').value = '';
+    document.getElementById('sRate').value = '';
+    document.getElementById('sNotes').value = '';
+    save(); render(); updateDropdown(); closeModal('studentModal');
+    toast('Alumno añadido.');
+  }
+
+  // --- ACTIONS ---
+  function togglePay(id) {
+    const c = classes.find(x => x.id === id); if (!c) return;
+    c.paid = !c.paid;
+    save(); render();
+    toast(c.paid ? 'Marcado como pagado.' : 'Marcado como pendiente.');
+  }
+
+  function deleteClass(id) {
+    classes = classes.filter(c => c.id !== id);
+    save(); render(); toast('Clase eliminada.');
+  }
+
+  function deleteStudent(id) {
+    if (!confirm('¿Borrar alumno y todas sus clases?')) return;
+    students = students.filter(s => s.id !== id);
+    classes  = classes.filter(c => c.studentId !== id);
+    save(); render(); updateDropdown(); toast('Alumno eliminado.');
+  }
+
+  // --- TOAST ---
+  let toastTimer;
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+  }
+
+  // --- INIT ---
+  render();
+  updateDropdown();
+</script>
 </body>
 </html>
