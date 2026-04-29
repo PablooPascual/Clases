@@ -438,6 +438,8 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+  .money { white-space: nowrap; }
+
   /* SECTION DIVIDER */
   .section-label {
     font-size: 10px;
@@ -504,6 +506,41 @@
     .tbl-wrap .empty-row td::before { content: none; }
     .tbl-wrap .section-label { margin: 0; border-radius: 0; }
   }
+  @media (max-width: 430px) {
+    .topbar-left { width: 100%; }
+    .topbar-title { font-size: 15px; }
+    .metrics { gap: 8px; }
+    .metric-val { font-size: 20px; }
+    .card-head { padding: 12px; }
+    .filters { gap: 6px; }
+    .filter-btn { flex: 1 1 100%; }
+    .tbl-wrap tr.class-row {
+      margin: 10px 10px;
+      grid-template-columns: 1fr;
+    }
+    .tbl-wrap tr.class-row td[data-label="Fecha"],
+    .tbl-wrap tr.class-row td[data-label="Alumno"],
+    .tbl-wrap tr.class-row td[data-label="Horas"],
+    .tbl-wrap tr.class-row td[data-label="Total"],
+    .tbl-wrap tr.class-row td[data-label="Estado"],
+    .tbl-wrap tr.class-row td[data-label="Acciones"] {
+      grid-column: 1 / -1;
+    }
+    .tbl-wrap tr.class-row td {
+      padding: 9px 10px;
+    }
+    .tbl-wrap tr.class-row td[data-label="Acciones"] {
+      justify-content: flex-start;
+    }
+    .tbl-wrap tr.class-row td[data-label="Acciones"] .row-actions {
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .tbl-wrap tr.class-row td[data-label="Acciones"] .row-actions button {
+      flex: 1 1 0;
+      padding: 7px 0;
+    }
+  }
   @media (max-width: 380px) {
     .metrics { grid-template-columns: 1fr 1fr; }
     .metric { padding: 12px; }
@@ -512,12 +549,6 @@
     .modal { padding: 20px; }
     .form-row { grid-template-columns: 1fr; }
     .tbl-wrap tr.class-row { grid-template-columns: 1fr; }
-    .tbl-wrap tr.class-row td[data-label="Fecha"],
-    .tbl-wrap tr.class-row td[data-label="Alumno"],
-    .tbl-wrap tr.class-row td[data-label="Horas"],
-    .tbl-wrap tr.class-row td[data-label="Total"],
-    .tbl-wrap tr.class-row td[data-label="Estado"],
-    .tbl-wrap tr.class-row td[data-label="Acciones"] { grid-column: 1 / -1; }
   }
 </style>
 </head>
@@ -731,8 +762,8 @@
     const income  = mc.filter(c => c.paid).reduce((s,c) => s + c.total, 0);
     const pending = mc.filter(c => !c.paid).reduce((s,c) => s + c.total, 0);
     const hours   = mc.reduce((s,c) => s + c.duration, 0);
-    document.getElementById('statIncome').textContent  = income.toFixed(2) + '€';
-    document.getElementById('statPending').textContent = pending.toFixed(2) + '€';
+    document.getElementById('statIncome').textContent  = Math.round(income) + '€';
+    document.getElementById('statPending').textContent = Math.round(pending) + '€';
     document.getElementById('statHours').textContent   = (Number.isInteger(hours) ? hours : hours.toFixed(1)) + 'h';
     document.getElementById('statCount').textContent   = mc.length;
   }
@@ -793,7 +824,7 @@
       <td class="date-cell" data-label="Fecha">${fmtDate(c.date)}${c.time ? `<span class="time">${c.time}</span>` : ''}</td>
       <td class="name-cell" data-label="Alumno">${esc(c.studentName)}</td>
       <td data-label="Horas">${c.duration}h</td>
-      <td class="total-cell" data-label="Total">${c.total.toFixed(2)}€</td>
+      <td class="total-cell money" data-label="Total">${Math.round(c.total)}€</td>
       <td data-label="Estado">${badge}</td>
       <td data-label="Acciones"><div class="row-actions">
         ${payBtn}
@@ -826,16 +857,16 @@
         <div class="alumno-item">
           <div>
             <div class="alumno-name">${esc(s.name)}</div>
-            <div class="alumno-sub">${s.rate}€/h · ${total} clase${total !== 1 ? 's' : ''}</div>
+            <div class="alumno-sub">${Math.round(s.rate)}€/h · ${total} clase${total !== 1 ? 's' : ''}</div>
           </div>
           <div style="text-align:right">
-            ${debt > 0 ? `<div class="alumno-debt">${debt.toFixed(2)}€</div>` : `<div class="alumno-ok">Al día</div>`}
+            ${debt > 0 ? `<div class="alumno-debt money">${Math.round(debt)}€</div>` : `<div class="alumno-ok">Al día</div>`}
             <button class="btn btn-sm" style="margin-top:4px;font-size:10px;padding:2px 8px" onclick="deleteStudent('${s.id}')">Borrar</button>
           </div>
         </div>`;
     });
 
-    document.getElementById('totalDebt').textContent = totalDebt.toFixed(2) + '€';
+    document.getElementById('totalDebt').textContent = Math.round(totalDebt) + '€';
     document.getElementById('totalDebtSub').textContent = debtors > 0
       ? `${debtors} alumno${debtors !== 1 ? 's' : ''} con saldo pendiente`
       : 'Sin saldo pendiente';
