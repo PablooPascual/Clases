@@ -299,6 +299,7 @@
     color: var(--text3);
     font-size: 13px;
   }
+  .empty-row td::before { content: none; }
 
   /* SIDEBAR */
   .sidebar { display: flex; flex-direction: column; gap: 12px; }
@@ -486,13 +487,21 @@
     .tbl-wrap td,
     .tbl-wrap tr { display: block; width: 100%; }
     .tbl-wrap thead { display: none; }
-    .tbl-wrap tr { margin: 10px 12px; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--bg2); box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04); }
-    .tbl-wrap td { border-bottom: 1px solid var(--border); padding: 10px 12px; display: flex; justify-content: space-between; gap: 10px; align-items: center; }
-    .tbl-wrap td::before { content: attr(data-label); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); flex: 0 0 auto; }
-    .tbl-wrap td:last-child { border-bottom: none; }
+    .tbl-wrap tr.class-row { margin: 10px 12px; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--bg2); box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .tbl-wrap tr.class-row td { border-bottom: 1px solid var(--border); padding: 10px 12px; display: flex; justify-content: space-between; gap: 10px; align-items: center; min-width: 0; }
+    .tbl-wrap tr.class-row td::before { content: attr(data-label); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); flex: 0 0 auto; }
+    .tbl-wrap tr.class-row td[data-label="Fecha"] { grid-column: 1 / -1; }
+    .tbl-wrap tr.class-row td[data-label="Alumno"] { font-weight: 600; }
+    .tbl-wrap tr.class-row td[data-label="Acciones"] { grid-column: 1 / -1; border-bottom: none; justify-content: flex-end; }
+    .tbl-wrap tr.class-row td[data-label="Acciones"]::before { align-self: center; }
+    .tbl-wrap tr.class-row td[data-label="Acciones"] .row-actions { width: 100%; justify-content: flex-end; flex-wrap: wrap; }
+    .tbl-wrap tr.class-row td[data-label="Acciones"] .row-actions button { padding: 6px 0; }
+    .tbl-wrap tr.class-row td:last-child { border-bottom: none; }
     .tbl-wrap .date-cell .time { margin-top: 2px; }
-    .tbl-wrap .row-actions { width: 100%; justify-content: flex-end; flex-wrap: wrap; }
-    .tbl-wrap .row-actions button { padding: 6px 0; }
+    .tbl-wrap td.section-label,
+    .tbl-wrap .empty-row td { display: block; }
+    .tbl-wrap td.section-label::before,
+    .tbl-wrap .empty-row td::before { content: none; }
     .tbl-wrap .section-label { margin: 0; border-radius: 0; }
   }
   @media (max-width: 380px) {
@@ -502,6 +511,13 @@
     .filter-btn { flex-basis: 100%; }
     .modal { padding: 20px; }
     .form-row { grid-template-columns: 1fr; }
+    .tbl-wrap tr.class-row { grid-template-columns: 1fr; }
+    .tbl-wrap tr.class-row td[data-label="Fecha"],
+    .tbl-wrap tr.class-row td[data-label="Alumno"],
+    .tbl-wrap tr.class-row td[data-label="Horas"],
+    .tbl-wrap tr.class-row td[data-label="Total"],
+    .tbl-wrap tr.class-row td[data-label="Estado"],
+    .tbl-wrap tr.class-row td[data-label="Acciones"] { grid-column: 1 / -1; }
   }
 </style>
 </head>
@@ -773,7 +789,7 @@
       ? `<button class="pay-btn" onclick="togglePay('${c.id}')">Cobrar</button>`
       : (!future && c.paid ? `<button class="pay-btn" onclick="togglePay('${c.id}')">Revertir</button>` : '');
 
-    return `<tr class="${future ? 'future' : 'past'}">
+    return `<tr class="class-row ${future ? 'future' : 'past'}">
       <td class="date-cell" data-label="Fecha">${fmtDate(c.date)}${c.time ? `<span class="time">${c.time}</span>` : ''}</td>
       <td class="name-cell" data-label="Alumno">${esc(c.studentName)}</td>
       <td data-label="Horas">${c.duration}h</td>
