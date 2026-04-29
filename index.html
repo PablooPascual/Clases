@@ -242,7 +242,7 @@
     padding: 10px 14px;
     vertical-align: middle;
   }
-  .class-summary { cursor: pointer; }
+  .class-summary { cursor: default; }
   .class-summary:hover { background: var(--bg3); }
   .class-summary .summary-label {
     font-size: 10px;
@@ -902,7 +902,7 @@
     const arrow = isOpen ? '▲' : '▼';
 
     return `
-      <tr class="class-summary ${future ? 'future' : 'past'}" onclick="toggleClassDetails('${c.id}')">
+      <tr class="class-summary ${future ? 'future' : 'past'}">
         <td class="date-cell" data-label="Día">
           ${fmtDate(c.date)}${c.time ? `<span class="time">${c.time}</span>` : ''}
         </td>
@@ -914,7 +914,7 @@
           <div class="summary-label">Precio</div>
           <div class="summary-value money">${Math.round(c.total)}€</div>
         </td>
-        <td class="toggle-cell"><button class="expand-btn ${isOpen ? 'open' : ''}" type="button" aria-label="Abrir detalles" onclick="event.stopPropagation(); toggleClassDetails('${c.id}')">${arrow}</button></td>
+        <td class="toggle-cell"><button class="expand-btn ${isOpen ? 'open' : ''}" type="button" aria-label="Abrir o cerrar detalles" onclick="toggleClassDetails('${c.id}')">${arrow}</button></td>
       </tr>
       <tr class="class-details ${isOpen ? '' : 'details-hidden'}">
         <td colspan="4">
