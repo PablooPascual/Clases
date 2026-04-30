@@ -3,777 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor de Clases - Control de Ingresos</title>
+    <title>ProfePRO - Gestión de Clases</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
-        .calendar-day { min-height: 100px; border: 1px solid #e2e8f0; transition: all 0.2s; }
-        .calendar-day:hover { background-color: #f1f5f9; }
-        .modal { transition: opacity 0.25s ease; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f8fafc; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        .nav-active { color: #4f46e5 !important; }
         .hidden { display: none; }
+        .animate-slide-up { animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        input, select { font-size: 16px !important; }
     </style>
 </head>
-<body class="text-slate-800">
+<body class="text-slate-900 pb-24">
 
-    <!-- Navegación -->
-    <nav class="bg-indigo-600 text-white p-4 shadow-lg sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold flex items-center gap-2">
-                <i class="fas fa-graduation-cap"></i> Mis Clases
-            </h1>
-            <div class="flex gap-4">
-                <button onclick="showSection('dashboard')" class="hover:text-indigo-200"><i class="fas fa-chart-line"></i> Dashboard</button>
-                <button onclick="showSection('calendar')" class="hover:text-indigo-200"><i class="fas fa-calendar-alt"></i> Calendario</button>
-                <button onclick="showSection('students')" class="hover:text-indigo-200"><i class="fas fa-users"></i> Alumnos</button>
+    <!-- HEADER COMPACTO -->
+    <header class="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-40 p-4">
+        <div class="flex justify-between items-center max-w-lg mx-auto">
+            <h1 class="text-xl font-extrabold tracking-tight italic text-indigo-600">PROFE<span class="text-slate-400 font-light">PRO</span></h1>
+            <div class="text-right">
+                <p class="text-[10px] text-slate-400 font-bold uppercase">Deuda Total</p>
+                <p id="stat-pending-global" class="text-lg font-black text-rose-500 leading-none">0€</p>
             </div>
         </div>
-    </nav>
+    </header>
 
-    <main class="max-w-6xl mx-auto p-4 md:p-8">
+    <main class="max-w-lg mx-auto p-4 space-y-8">
 
-        <!-- SECCIÓN: DASHBOARD -->
-        <section id="section-dashboard" class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-                    <div class="bg-green-100 p-4 rounded-full text-green-600"><i class="fas fa-euro-sign fa-2x"></i></div>
-                    <div>
-                        <p class="text-sm text-slate-500 font-medium">Ingresos Mes</p>
-                        <h2 id="stat-income" class="text-2xl font-bold">0€</h2>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-                    <div class="bg-blue-100 p-4 rounded-full text-blue-600"><i class="fas fa-clock fa-2x"></i></div>
-                    <div>
-                        <p class="text-sm text-slate-500 font-medium">Horas dadas</p>
-                        <h2 id="stat-hours" class="text-2xl font-bold">0h</h2>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-                    <div class="bg-orange-100 p-4 rounded-full text-orange-600"><i class="fas fa-hand-holding-usd fa-2x"></i></div>
-                    <div>
-                        <p class="text-sm text-slate-500 font-medium">Pendiente cobro</p>
-                        <h2 id="stat-pending" class="text-2xl font-bold">0€</h2>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mt-8">
-                <h3 class="text-xl font-bold">Últimas Clases</h3>
-                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                    <div class="flex items-center gap-2">
-                        <label for="input-group-by" class="text-sm text-slate-600 font-medium">Agrupar por</label>
-                        <select id="input-group-by" class="p-2 border border-slate-200 rounded-lg text-sm bg-white">
-                            <option value="none">Sin agrupar</option>
-                            <option value="week">Semana</option>
-                            <option value="month">Mes</option>
-                            <option value="student">Alumno</option>
-                        </select>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <input id="input-search-classes" placeholder="Buscar (alumno, fecha)" class="p-2 border border-slate-200 rounded-lg text-sm bg-white" />
-                    </div>
-                    <button id="btn-open-class-modal" onclick="openModal('classModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition">
-                        + Registrar Clase
-                    </button>
-                </div>
-            </div>
-
-            <div id="upcoming-classes" class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6"></div>
-
-            <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-100">
-                <div class="overflow-x-auto">
-                <table class="w-full text-left min-w-[640px]">
-                    <thead class="bg-slate-50 border-b border-slate-100">
-                        <tr>
-                            <th class="p-4 text-sm font-semibold text-slate-600">Fecha</th>
-                            <th class="p-4 text-sm font-semibold text-slate-600">Alumno</th>
-                            <th class="p-4 text-sm font-semibold text-slate-600">Horas</th>
-                            <th class="p-4 text-sm font-semibold text-slate-600">Total</th>
-                            <th class="p-4 text-sm font-semibold text-slate-600">Estado</th>
-                            <th class="p-4 text-sm font-semibold text-slate-600">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recent-classes-body">
-                        <!-- Las clases se cargan aquí con JS -->
-                    </tbody>
-                </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECCIÓN: CALENDARIO -->
-        <section id="section-calendar" class="hidden space-y-4">
-            <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                <button onclick="prevMonth()" class="p-2 hover:bg-slate-100 rounded-full"><i class="fas fa-chevron-left"></i></button>
-                <h2 id="calendar-month-year" class="text-lg font-bold capitalize">Mes Año</h2>
-                <button onclick="nextMonth()" class="p-2 hover:bg-slate-100 rounded-full"><i class="fas fa-chevron-right"></i></button>
-            </div>
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                <div class="calendar-grid bg-slate-50 border-b text-center font-bold text-xs py-2 uppercase text-slate-500 tracking-wider">
-                    <div>Lun</div><div>Mar</div><div>Mie</div><div>Jue</div><div>Vie</div><div>Sab</div><div>Dom</div>
-                </div>
-                <div id="calendar-days" class="calendar-grid">
-                    <!-- Los días del calendario se cargan aquí -->
-                </div>
-            </div>
-        </section>
-
-        <!-- SECCIÓN: ALUMNOS -->
-        <section id="section-students" class="hidden space-y-6">
+        <!-- SECCIÓN 1: ALUMNOS -->
+        <section id="section-students" class="space-y-4">
             <div class="flex justify-between items-center">
-                <h3 class="text-xl font-bold">Mis Alumnos</h3>
-                <button onclick="openModal('studentModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium">
-                    + Nuevo Alumno
+                <h3 class="font-extrabold text-xl">Mis Alumnos</h3>
+                <button onclick="openModal('studentModal')" class="bg-indigo-600 text-white w-10 h-10 rounded-2xl shadow-lg flex items-center justify-center">
+                    <i class="fas fa-user-plus text-sm"></i>
                 </button>
             </div>
-            <div id="students-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Tarjetas de alumnos se cargan aquí -->
+            <div id="students-grid" class="grid gap-3"></div>
+        </section>
+
+        <!-- SECCIÓN 2: BALANCE (NUEVO DASHBOARD) -->
+        <section id="section-balance" class="hidden space-y-6">
+            <h3 class="font-extrabold text-xl px-1">Rendimiento Mensual</h3>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-indigo-600 text-white p-5 rounded-[2rem] shadow-xl shadow-indigo-100">
+                    <p class="text-[10px] font-bold opacity-70 uppercase tracking-widest">Ingresos Mes</p>
+                    <h4 id="balance-month-money" class="text-2xl font-black">0€</h4>
+                    <p id="balance-week-money" class="text-[10px] mt-1 opacity-80 font-medium">+0€ esta semana</p>
+                </div>
+                <div class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Horas Totales</p>
+                    <h4 id="balance-month-hours" class="text-2xl font-black text-slate-800">0h</h4>
+                    <p id="balance-week-hours" class="text-[10px] mt-1 text-slate-400 font-medium">+0h esta semana</p>
+                </div>
+            </div>
+
+            <!-- Contador de Clases -->
+            <div class="bg-emerald-500 text-white p-6 rounded-[2rem] shadow-lg shadow-emerald-100 flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-bold opacity-80 uppercase tracking-widest">Clases dadas este mes</p>
+                    <h4 id="balance-month-count" class="text-3xl font-black">0</h4>
+                </div>
+                <div class="bg-white/20 p-4 rounded-2xl text-2xl">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <h5 class="text-xs font-black uppercase text-rose-500 tracking-widest px-1">Pagos Pendientes</h5>
+                <div id="pending-list" class="space-y-2"></div>
             </div>
         </section>
+
+        <!-- SECCIÓN 3: CLASES -->
+        <section id="section-classes" class="hidden space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="font-extrabold text-xl">Historial</h3>
+                <button onclick="openModal('classModal')" class="bg-slate-800 text-white px-5 py-2.5 rounded-2xl text-xs font-black">
+                    + NUEVA CLASE
+                </button>
+            </div>
+            <div id="recent-classes-list" class="space-y-3"></div>
+        </section>
+
     </main>
 
-    <!-- MODAL: REGISTRAR CLASE -->
-    <div id="classModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden z-[100] flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Registrar Nueva Clase</h3>
-                <button onclick="closeModal('classModal')" aria-label="Cerrar modal de clase" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
-            </div>
-            <form id="classForm" class="space-y-4">
-                <div>
-                    <label for="input-class-student" class="block text-sm font-medium mb-1">Alumno</label>
-                    <select id="input-class-student" class="w-full p-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" required></select>
+    <!-- NAV INFERIOR -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex justify-around p-4 z-50 shadow-lg">
+        <button onclick="showSection('students')" id="nav-students" class="nav-link flex flex-col items-center gap-1 text-slate-300">
+            <i class="fas fa-users text-xl"></i>
+            <span class="text-[9px] font-black uppercase">Alumnos</span>
+        </button>
+        <button onclick="showSection('balance')" id="nav-balance" class="nav-link flex flex-col items-center gap-1 text-slate-300">
+            <i class="fas fa-chart-line text-xl"></i>
+            <span class="text-[9px] font-black uppercase">Balance</span>
+        </button>
+        <button onclick="showSection('classes')" id="nav-classes" class="nav-link flex flex-col items-center gap-1 text-slate-300">
+            <i class="fas fa-list text-xl"></i>
+            <span class="text-[9px] font-black uppercase">Clases</span>
+        </button>
+    </nav>
+
+    <!-- MODAL ALUMNO -->
+    <div id="studentModal" class="modal fixed inset-0 bg-slate-900/40 hidden z-[100] flex items-end justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] w-full max-w-md p-8 animate-slide-up">
+            <h3 class="text-2xl font-black mb-6">Nuevo Alumno</h3>
+            <form id="studentForm" class="space-y-4">
+                <input type="text" id="input-student-name" class="w-full p-4 bg-slate-50 border-none rounded-2xl" placeholder="Nombre completo" required>
+                <input type="number" id="input-student-rate" class="w-full p-4 bg-slate-50 border-none rounded-2xl" placeholder="Precio / hora" required>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeModal('studentModal')" class="flex-1 font-bold text-slate-400">Cancelar</button>
+                    <button type="submit" class="flex-[2] bg-indigo-600 text-white font-black py-4 rounded-2xl">GUARDAR</button>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="input-class-date" class="block text-sm font-medium mb-1">Fecha</label>
-                        <input type="date" id="input-class-date" class="w-full p-2 border border-slate-200 rounded-lg" required>
-                    </div>
-                    <div>
-                        <label for="input-class-time" class="block text-sm font-medium mb-1">Hora</label>
-                        <input type="time" id="input-class-time" class="w-full p-2 border border-slate-200 rounded-lg" required>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="input-class-duration" class="block text-sm font-medium mb-1">Duración (Horas)</label>
-                        <input type="number" step="0.5" min="0.5" id="input-class-duration" class="w-full p-2 border border-slate-200 rounded-lg" value="1" required>
-                    </div>
-                    <div>
-                        <label for="input-class-paid" class="block text-sm font-medium mb-1">Estado</label>
-                        <select id="input-class-paid" class="w-full p-2 border border-slate-200 rounded-lg">
-                            <option value="false">Pendiente</option>
-                            <option value="true">Pagado</option>
-                        </select>
-                    </div>
-                </div>
-                <button id="btn-save-class" type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition">Guardar Clase</button>
             </form>
         </div>
     </div>
 
-    <!-- MODAL: NUEVO ALUMNO -->
-    <div id="studentModal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden z-[100] flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold">Añadir Alumno</h3>
-                <button onclick="closeModal('studentModal')" aria-label="Cerrar modal de alumno" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
-            </div>
-            <form id="studentForm" class="space-y-4">
-                <div>
-                    <label for="input-student-name" class="block text-sm font-medium mb-1">Nombre Completo</label>
-                    <input type="text" id="input-student-name" class="w-full p-2 border border-slate-200 rounded-lg" placeholder="Ej: Juanito Pérez" required>
+    <!-- MODAL CLASE -->
+    <div id="classModal" class="modal fixed inset-0 bg-slate-900/40 hidden z-[100] flex items-end justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] w-full max-w-md p-8 animate-slide-up">
+            <h3 class="text-2xl font-black mb-6">Registrar Clase</h3>
+            <form id="classForm" class="space-y-4">
+                <select id="input-class-student" class="w-full p-4 bg-slate-50 border-none rounded-2xl appearance-none" required></select>
+                <div class="flex gap-3">
+                    <input type="date" id="input-class-date" class="w-1/2 p-4 bg-slate-50 border-none rounded-2xl" required>
+                    <input type="number" step="0.5" id="input-class-duration" class="w-1/2 p-4 bg-slate-50 border-none rounded-2xl" value="1">
                 </div>
-                <div>
-                    <label for="input-student-rate" class="block text-sm font-medium mb-1">Precio por Hora (€)</label>
-                    <input type="number" step="0.5" min="0" id="input-student-rate" class="w-full p-2 border border-slate-200 rounded-lg" placeholder="Ej: 15" required>
+                <div class="bg-indigo-50 p-4 rounded-2xl flex items-center gap-3">
+                    <input type="checkbox" id="input-class-paid" class="w-5 h-5 rounded text-indigo-600 border-none">
+                    <label for="input-class-paid" class="text-sm font-bold text-indigo-700 italic">¿Pagado ahora?</label>
                 </div>
-                <div>
-                    <label for="input-student-notes" class="block text-sm font-medium mb-1">Notas (opcional)</label>
-                    <textarea id="input-student-notes" class="w-full p-2 border border-slate-200 rounded-lg" placeholder="Ej: Nivel 3º Primaria, refuerzo mates"></textarea>
-                </div>
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition">Añadir Alumno</button>
+                <button type="submit" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl">REGISTRAR</button>
             </form>
         </div>
     </div>
 
     <script>
-        // --- BASE DE DATOS LOCAL (SIMULADA) ---
-        function getStorageArray(key) {
-            try {
-                const raw = localStorage.getItem(key);
-                const parsed = raw ? JSON.parse(raw) : [];
-                return Array.isArray(parsed) ? parsed : [];
-            } catch {
-                return [];
-            }
-        }
+        let students = JSON.parse(localStorage.getItem('students')) || [];
+        let classes = JSON.parse(localStorage.getItem('classes')) || [];
 
-        function escapeHTML(value) {
-            return String(value ?? '')
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-
-        let students = getStorageArray('students');
-        let classes = getStorageArray('classes');
-
-        function normalizePaid(value) {
-            if (typeof value === 'boolean') return value;
-            if (typeof value === 'string') return value.toLowerCase() === 'true';
-            return Boolean(value);
-        }
-
-        // Normaliza datos guardados para evitar estados visuales incorrectos.
-        students = students.map(s => ({
-            ...s,
-            rate: Number(s.rate) || 0
-        }));
-
-        classes = classes.map(c => ({
-            ...c,
-            duration: Number(c.duration) || 0,
-            rate: Number(c.rate) || 0,
-            total: Number(c.total) || 0,
-            paid: normalizePaid(c.paid),
-            scheduled: Boolean(c.scheduled)
-        }));
-        
-        // UI state
-        let showAllRecent = false;
-        let editingClassId = null;
-        
-        let currentMonth = new Date().getMonth();
-        let currentYear = new Date().getFullYear();
-
-        // --- INICIALIZACIÓN ---
-        window.onload = () => {
-            updateDashboard();
-            updateStudentDropdown();
-            syncClassFormAvailability();
-            renderCalendar();
-            renderStudents();
-            showSection('dashboard');
-
-            const groupBySelect = document.getElementById('input-group-by');
-            groupBySelect.addEventListener('change', () => {
-                renderRecentClasses();
-            });
-            const searchInput = document.getElementById('input-search-classes');
-            if (searchInput) {
-                searchInput.addEventListener('input', () => renderRecentClasses());
-            }
-        };
-
-        // --- FUNCIONES DE NAVEGACIÓN ---
         function showSection(sectionId) {
             document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
             document.getElementById(`section-${sectionId}`).classList.remove('hidden');
+            document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('nav-active'));
+            document.getElementById(`nav-${sectionId}`).classList.add('nav-active');
+            if(sectionId === 'balance') updateBalance();
         }
 
-        function openModal(id) {
-            if (id === 'classModal' && students.length === 0) {
-                alert('Primero añade al menos un alumno para registrar clases.');
-                return;
-            }
-            // Si abrimos el modal de clase sin estar en modo edición, restablecer estado
-            if (id === 'classModal' && !editingClassId) {
-                const form = document.getElementById('classForm');
-                form.reset();
-                document.getElementById('classModal').querySelector('h3').innerText = 'Registrar Nueva Clase';
-                document.getElementById('btn-save-class').innerText = 'Guardar Clase';
-            }
-            document.getElementById(id).classList.remove('hidden');
+        function openModal(id) { 
+            if(id === 'classModal' && students.length === 0) return alert("Añade un alumno primero");
+            document.getElementById(id).classList.remove('hidden'); 
         }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
-        // Cerrar modales pulsando ESC.
-        document.addEventListener('keydown', (e) => {
-            if (e.key !== 'Escape') return;
-            closeModal('classModal');
-            closeModal('studentModal');
-        });
-
-        // --- FUNCIONES DE ALUMNOS ---
         document.getElementById('studentForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            const newStudent = {
-                id: Date.now().toString(),
-                name: document.getElementById('input-student-name').value,
-                rate: parseFloat(document.getElementById('input-student-rate').value),
-                notes: document.getElementById('input-student-notes').value
-            };
-            students.push(newStudent);
-            saveData();
-            updateStudentDropdown();
-            syncClassFormAvailability();
-            renderStudents();
-            closeModal('studentModal');
-            e.target.reset();
+            students.push({ id: Date.now().toString(), name: document.getElementById('input-student-name').value, rate: parseFloat(document.getElementById('input-student-rate').value) });
+            saveData(); renderAll(); closeModal('studentModal'); e.target.reset();
         });
 
-        function renderStudents() {
-            const grid = document.getElementById('students-grid');
-            grid.innerHTML = students.length === 0 ? '<p class="col-span-full text-center text-slate-400 py-10">Aún no tienes alumnos registrados.</p>' : '';
-            students.forEach(s => {
-                const safeName = escapeHTML(s.name);
-                const safeNotes = escapeHTML(s.notes || 'Sin notas adicionales');
-                grid.innerHTML += `
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h4 class="font-bold text-lg">${safeName}</h4>
-                                <span class="text-indigo-600 font-semibold text-sm">${s.rate}€/hora</span>
-                            </div>
-                            <button onclick="deleteStudent('${s.id}')" aria-label="Eliminar alumno" class="text-slate-300 hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
-                        </div>
-                        <p class="text-slate-500 text-sm italic">"${safeNotes}"</p>
-                    </div>
-                `;
-            });
-        }
-
-        function deleteStudent(id) {
-            if(confirm('¿Seguro? Se borrarán también sus registros de clases.')) {
-                students = students.filter(s => s.id !== id);
-                classes = classes.filter(c => c.studentId !== id);
-                saveData();
-                renderStudents();
-                updateDashboard();
-                updateStudentDropdown();
-                syncClassFormAvailability();
-                renderCalendar();
-            }
-        }
-
-        function updateStudentDropdown() {
-            const select = document.getElementById('input-class-student');
-            if (students.length === 0) {
-                select.innerHTML = '<option value="" disabled selected>No hay alumnos disponibles</option>';
-                return;
-            }
-            select.innerHTML = students.map(s => `<option value="${s.id}">${escapeHTML(s.name)}</option>`).join('');
-        }
-
-        function syncClassFormAvailability() {
-            const openBtn = document.getElementById('btn-open-class-modal');
-            const saveBtn = document.getElementById('btn-save-class');
-            const studentSelect = document.getElementById('input-class-student');
-
-            const hasStudents = students.length > 0;
-            if (openBtn) {
-                openBtn.disabled = !hasStudents;
-                openBtn.classList.toggle('opacity-60', !hasStudents);
-                openBtn.classList.toggle('cursor-not-allowed', !hasStudents);
-            }
-            if (saveBtn) saveBtn.disabled = !hasStudents;
-            if (studentSelect) studentSelect.disabled = !hasStudents;
-        }
-
-        // --- FUNCIONES DE CLASES ---
         document.getElementById('classForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            const studentId = document.getElementById('input-class-student').value;
-            const student = students.find(s => s.id === studentId);
-            if (!student) {
-                alert('Selecciona un alumno válido antes de guardar la clase.');
-                return;
-            }
-            const duration = parseFloat(document.getElementById('input-class-duration').value);
-            if (!Number.isFinite(duration) || duration <= 0) {
-                alert('La duración debe ser mayor de 0.');
-                return;
-            }
-            const classData = {
-                studentId: studentId,
-                studentName: student.name,
-                date: document.getElementById('input-class-date').value,
-                time: document.getElementById('input-class-time').value,
-                duration: duration,
-                rate: student.rate,
-                total: duration * student.rate,
-                paid: document.getElementById('input-class-paid').value === "true"
-            };
-
-            if (editingClassId) {
-                const idx = classes.findIndex(c => c.id === editingClassId);
-                if (idx !== -1) {
-                    classes[idx] = { ...classes[idx], ...classData };
-                }
-                editingClassId = null;
-                document.getElementById('classModal').querySelector('h3').innerText = 'Registrar Nueva Clase';
-                document.getElementById('btn-save-class').innerText = '+ Guardar Clase';
-            } else {
-                const newClass = { id: Date.now().toString(), scheduled: false, ...classData };
-                classes.push(newClass);
-            }
-
-            saveData();
-            updateDashboard();
-            renderCalendar();
-            closeModal('classModal');
-            e.target.reset();
+            const sId = document.getElementById('input-class-student').value;
+            classes.push({ id: Date.now().toString(), studentId: sId, studentName: students.find(s => s.id === sId).name, date: document.getElementById('input-class-date').value, duration: parseFloat(document.getElementById('input-class-duration').value), paid: document.getElementById('input-class-paid').checked });
+            saveData(); renderAll(); closeModal('classModal'); e.target.reset();
         });
 
-        function updateDashboard() {
+        function updateBalance() {
             const now = new Date();
-            const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-            
-            const monthClasses = classes.filter(c => c.date.startsWith(currentMonthStr));
-            
-            const totalIncome = monthClasses.filter(c => c.paid).reduce((sum, c) => sum + c.total, 0);
-            const totalHours = monthClasses.reduce((sum, c) => sum + c.duration, 0);
-            const pendingIncome = monthClasses.filter(c => !c.paid).reduce((sum, c) => sum + c.total, 0);
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1));
+            startOfWeek.setHours(0,0,0,0);
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
 
-            document.getElementById('stat-income').innerText = `${totalIncome.toFixed(2)}€`;
-            document.getElementById('stat-hours').innerText = `${totalHours}h`;
-            document.getElementById('stat-pending').innerText = `${pendingIncome.toFixed(2)}€`;
+            let wMoney = 0, wHours = 0, mMoney = 0, mHours = 0, mCount = 0;
 
-            renderRecentClasses();
-            renderUpcomingClasses();
-        }
-
-        function renderUpcomingClasses() {
-            const container = document.getElementById('upcoming-classes');
-            container.innerHTML = '';
-            const today = new Date();
-            today.setHours(0,0,0,0);
-            const upcoming = [...classes]
-                .filter(c => {
-                    const d = parseDateString(c.date);
-                    return d && d >= today;
-                })
-                .sort((a,b) => `${a.date}T${a.time || '00:00'}`.localeCompare(`${b.date}T${b.time || '00:00'}`))
-                .slice(0,3);
-
-            if (upcoming.length === 0) {
-                container.innerHTML = '<div class="col-span-full bg-white p-4 rounded-2xl shadow-sm border border-slate-100 text-center text-slate-400">No hay próximas clases.</div>';
-                return;
-            }
-
-            upcoming.forEach(c => {
-                const student = students.find(s => s.id === c.studentId) || {};
-                container.innerHTML += `
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-bold">${escapeHTML(c.studentName)}</h4>
-                                <div class="text-sm text-slate-500">${formatDate(c.date)} ${c.time || ''} · ${c.duration}h</div>
-                            </div>
-                            <div class="text-right">
-                                <div class="font-bold text-indigo-600">${c.total.toFixed(2)}€</div>
-                                ${c.scheduled && isFutureDate(c.date) ? '<div class="text-xs text-indigo-700 mt-1">Programada</div>' : ''}
-                            </div>
-                        </div>
-                        <div class="mt-3 flex gap-2 justify-end">
-                            <button onclick="openEditClass('${c.id}')" class="text-indigo-600 hover:underline">Editar</button>
-                            ${isFutureDate(c.date) ? `<button onclick="toggleSchedule('${c.id}')" class="text-indigo-600 hover:underline">${c.scheduled ? 'Cancelar' : 'Programar'}</button>` : ''}
-                        </div>
-                    </div>
-                `;
+            classes.forEach(c => {
+                const cTime = new Date(c.date).getTime();
+                const total = c.duration * (students.find(s => s.id === c.studentId)?.rate || 0);
+                if(cTime >= startOfWeek.getTime()) { wMoney += total; wHours += c.duration; }
+                if(cTime >= startOfMonth) { mMoney += total; mHours += c.duration; mCount++; }
             });
+
+            document.getElementById('balance-month-money').innerText = `${mMoney}€`;
+            document.getElementById('balance-week-money').innerText = `+${wMoney}€ esta semana`;
+            document.getElementById('balance-month-hours').innerText = `${mHours}h`;
+            document.getElementById('balance-week-hours').innerText = `+${wHours}h esta semana`;
+            document.getElementById('balance-month-count').innerText = mCount;
+            renderPendingList();
         }
 
-        function renderRecentClasses() {
-            const tbody = document.getElementById('recent-classes-body');
-            tbody.innerHTML = '';
-
-            const sorted = [...classes]
-                .sort((a, b) => `${b.date}T${b.time || '00:00'}`.localeCompare(`${a.date}T${a.time || '00:00'}`));
-
-            // Filtrar por búsqueda
-            const searchTerm = document.getElementById('input-search-classes')?.value?.trim().toLowerCase() || '';
-            let filtered = sorted;
-            if (searchTerm) {
-                filtered = sorted.filter(c => {
-                    const student = (c.studentName || '').toLowerCase();
-                    const dateFormatted = (formatDate(c.date) || '').toLowerCase();
-                    return student.includes(searchTerm) || c.date.includes(searchTerm) || dateFormatted.includes(searchTerm);
-                });
-            }
-
-            if (sorted.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-400">Aún no hay clases registradas.</td></tr>';
-                return;
-            }
-
-            const groupBy = document.getElementById('input-group-by')?.value || 'none';
-
-            if (groupBy === 'none') {
-                const limit = showAllRecent ? filtered.length : 5;
-                filtered.slice(0, limit).forEach(c => {
-                    tbody.innerHTML += renderClassRow(c);
-                });
-
-                if (sorted.length > 5) {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td colspan="6" class="p-3 text-center">
-                                <button onclick="toggleShowMore()" class="text-indigo-600 hover:underline">${showAllRecent ? 'Mostrar menos' : 'Mostrar más'}</button>
-                            </td>
-                        </tr>
-                    `;
+        function renderPendingList() {
+            const list = document.getElementById('pending-list');
+            list.innerHTML = '';
+            students.forEach(s => {
+                const debt = classes.filter(c => c.studentId === s.id && !c.paid).reduce((sum, c) => sum + (c.duration * s.rate), 0);
+                if(debt > 0) {
+                    list.innerHTML += `<div class="bg-rose-50 p-4 rounded-2xl flex justify-between items-center border border-rose-100"><div><p class="text-xs font-black text-rose-700">${s.name}</p><p class="text-[10px] text-rose-400">Deuda: ${debt}€</p></div><button onclick="settleAll('${s.id}')" class="bg-white text-rose-600 text-[10px] px-4 py-2 rounded-xl font-black">SALDAR</button></div>`;
                 }
-                return;
-            }
-
-            const grouped = new Map();
-
-            filtered.forEach(c => {
-                const meta = getGroupingMeta(c, groupBy);
-                if (!grouped.has(meta.key)) {
-                    grouped.set(meta.key, {
-                        label: meta.label,
-                        items: [],
-                        hours: 0,
-                        total: 0
-                    });
-                }
-
-                const group = grouped.get(meta.key);
-                group.items.push(c);
-                group.hours += Number(c.duration) || 0;
-                group.total += Number(c.total) || 0;
-            });
-
-            grouped.forEach(group => {
-                tbody.innerHTML += `
-                    <tr class="bg-slate-100/80 border-y border-slate-200">
-                        <td colspan="6" class="p-3">
-                            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-1">
-                                <span class="font-semibold text-slate-700">${escapeHTML(group.label)}</span>
-                                <span class="text-xs text-slate-500">${group.items.length} clases · ${formatHours(group.hours)}h · ${group.total.toFixed(2)}€</span>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-
-                group.items.forEach(c => {
-                    tbody.innerHTML += renderClassRow(c);
-                });
             });
         }
 
-        function renderClassRow(c) {
-            const safeStudentName = escapeHTML(c.studentName);
-            return `
-                <tr class="border-b border-slate-50 hover:bg-slate-50">
-                    <td class="p-3 text-sm">${formatDate(c.date)}</td>
-                    <td class="p-3 font-medium">${safeStudentName}</td>
-                    <td class="p-3 text-sm">${c.duration}h</td>
-                    <td class="p-3 font-bold text-indigo-600">${c.total.toFixed(2)}€</td>
-                    <td class="p-3">
-                        <div class="flex items-center gap-2">
-                            <span class="px-2 py-1 rounded-full text-xs font-bold ${c.paid ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}">${c.paid ? 'Pagado' : 'Pendiente'}</span>
-                            ${c.scheduled && isFutureDate(c.date) ? '<span class="px-2 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700">Programada</span>' : ''}
-                        </div>
-                    </td>
-                    <td class="p-3">
-                        <div class="flex gap-3 text-slate-400 items-center">
-                            <button onclick="openEditClass('${c.id}')" title="Editar" aria-label="Editar clase" class="hover:text-indigo-500"><i class="fas fa-edit"></i></button>
-                            ${isFutureDate(c.date) ? `<button onclick="toggleSchedule('${c.id}')" title="Programar/Cancelar" aria-label="Programar clase" class="hover:text-indigo-500"><i class="fas fa-calendar-check"></i></button>` : ''}
-                            <button onclick="togglePayment('${c.id}')" title="Marcar pagado/pendiente" aria-label="Cambiar estado de pago"><i class="fas fa-sync-alt hover:text-indigo-500"></i></button>
-                            <button onclick="deleteClass('${c.id}')" title="Eliminar" aria-label="Eliminar clase"><i class="fas fa-trash hover:text-red-500"></i></button>
-                        </div>
-                    </td>
-                </tr>
-            `;
+        function settleAll(sId) {
+            classes.forEach(c => { if(c.studentId === sId) c.paid = true; });
+            saveData(); renderAll(); updateBalance();
         }
 
-        function toggleShowMore() {
-            showAllRecent = !showAllRecent;
-            renderRecentClasses();
+        function renderAll() {
+            const grid = document.getElementById('students-grid'); grid.innerHTML = '';
+            let globalPending = 0;
+            students.forEach(s => {
+                const debt = classes.filter(c => c.studentId === s.id && !c.paid).reduce((sum, c) => sum + (c.duration * s.rate), 0);
+                globalPending += debt;
+                grid.innerHTML += `<div class="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 font-black text-sm">${s.name.charAt(0)}</div><div><h4 class="font-bold text-sm">${s.name}</h4><p class="text-[9px] text-slate-400 font-black uppercase mt-1">${s.rate}€/H</p></div></div><span class="text-[10px] font-black px-2 py-1 rounded-lg ${debt > 0 ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}">${debt > 0 ? `DEBE ${debt}€` : 'AL DÍA'}</span></div>`;
+            });
+            document.getElementById('stat-pending-global').innerText = `${globalPending}€`;
+            const list = document.getElementById('recent-classes-list'); list.innerHTML = '';
+            [...classes].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 10).forEach(c => {
+                list.innerHTML += `<div class="bg-white p-4 rounded-2xl flex justify-between items-center border-l-4 ${c.paid ? 'border-emerald-400' : 'border-rose-400'}"><div><p class="font-bold text-sm text-slate-800">${c.studentName}</p><p class="text-[10px] text-slate-400">${c.date} · ${c.duration}h</p></div><button onclick="togglePaid('${c.id}')" class="text-xl ${c.paid ? 'text-emerald-500' : 'text-slate-200'}"><i class="fas ${c.paid ? 'fa-check-circle' : 'fa-circle-dollar-to-slot'}"></i></button></div>`;
+            });
+            document.getElementById('input-class-student').innerHTML = students.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
         }
 
-        function isFutureDate(dateStr) {
-            const d = parseDateString(dateStr);
-            if (!d) return false;
-            const today = new Date();
-            today.setHours(0,0,0,0);
-            return d > today;
-        }
-
-        function openEditClass(id) {
-            const c = classes.find(x => x.id === id);
-            if (!c) return alert('Clase no encontrada.');
-            editingClassId = id;
-            document.getElementById('input-class-student').value = c.studentId;
-            document.getElementById('input-class-date').value = c.date;
-            document.getElementById('input-class-time').value = c.time || '';
-            document.getElementById('input-class-duration').value = c.duration;
-            document.getElementById('input-class-paid').value = c.paid ? 'true' : 'false';
-            document.getElementById('classModal').querySelector('h3').innerText = 'Editar Clase';
-            document.getElementById('btn-save-class').innerText = 'Guardar Cambios';
-            openModal('classModal');
-        }
-
-        function toggleSchedule(id) {
-            const idx = classes.findIndex(c => c.id === id);
-            if (idx === -1) return;
-            const c = classes[idx];
-            if (!isFutureDate(c.date)) return alert('Solo se pueden programar clases con fecha futura.');
-            c.scheduled = !Boolean(c.scheduled);
-            saveData();
-            renderRecentClasses();
-            renderCalendar();
-        }
-
-        function getGroupingMeta(classItem, groupBy) {
-            if (groupBy === 'student') {
-                const name = classItem.studentName || 'Alumno sin nombre';
-                return {
-                    key: `student-${name.toLowerCase()}`,
-                    label: `Alumno: ${name}`
-                };
-            }
-
-            const date = parseDateString(classItem.date);
-            if (!date) {
-                return { key: `unknown-${groupBy}`, label: 'Fecha no válida' };
-            }
-
-            if (groupBy === 'month') {
-                return {
-                    key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
-                    label: date.toLocaleDateString('es', { month: 'long', year: 'numeric' })
-                };
-            }
-
-            const start = startOfWeek(date);
-            const end = new Date(start);
-            end.setDate(start.getDate() + 6);
-            const weekNumber = getISOWeekNumber(date);
-            return {
-                key: `week-${toYMD(start)}`,
-                label: `Semana ${weekNumber} (${formatShortDate(start)} - ${formatShortDate(end)})`
-            };
-        }
-
-        function parseDateString(dateStr) {
-            const [year, month, day] = (dateStr || '').split('-').map(Number);
-            if (!year || !month || !day) return null;
-            return new Date(year, month - 1, day);
-        }
-
-        function startOfWeek(date) {
-            const weekStart = new Date(date);
-            const day = (weekStart.getDay() + 6) % 7;
-            weekStart.setDate(weekStart.getDate() - day);
-            weekStart.setHours(0, 0, 0, 0);
-            return weekStart;
-        }
-
-        function toYMD(date) {
-            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-        }
-
-        function formatShortDate(date) {
-            return date.toLocaleDateString('es', { day: 'numeric', month: 'short' });
-        }
-
-        function getISOWeekNumber(date) {
-            const tempDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-            const dayNum = (tempDate.getDay() + 6) % 7;
-            tempDate.setDate(tempDate.getDate() - dayNum + 3);
-            const firstThursday = new Date(tempDate.getFullYear(), 0, 4);
-            const firstThursdayDayNum = (firstThursday.getDay() + 6) % 7;
-            firstThursday.setDate(firstThursday.getDate() - firstThursdayDayNum + 3);
-            const diffMs = tempDate - firstThursday;
-            return 1 + Math.round(diffMs / 604800000);
-        }
-
-        function formatHours(value) {
-            return Number(value).toFixed(1).replace(/\.0$/, '');
-        }
-
-        function togglePayment(id) {
-            const index = classes.findIndex(c => c.id === id);
-            if (index === -1) return;
-            classes[index].paid = !normalizePaid(classes[index].paid);
-            saveData();
-            updateDashboard();
-            renderCalendar();
-        }
-
-        function deleteClass(id) {
-            classes = classes.filter(c => c.id !== id);
-            saveData();
-            updateDashboard();
-            renderCalendar();
-        }
-
-        // --- FUNCIONES CALENDARIO ---
-        function renderCalendar() {
-            const container = document.getElementById('calendar-days');
-            const monthLabel = document.getElementById('calendar-month-year');
-            container.innerHTML = '';
-
-            const date = new Date(currentYear, currentMonth, 1);
-            const monthName = date.toLocaleString('es', { month: 'long' });
-            monthLabel.innerText = `${monthName} ${currentYear}`;
-
-            // Ajuste inicio de semana (Lunes = 1, Domingo = 0)
-            let startDay = date.getDay();
-            startDay = startDay === 0 ? 6 : startDay - 1;
-
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-
-            // Espacios vacíos antes del primer día
-            for (let i = 0; i < startDay; i++) {
-                container.innerHTML += `<div class="calendar-day bg-slate-50/50"></div>`;
-            }
-
-            // Días del mes
-            for (let d = 1; d <= daysInMonth; d++) {
-                const fullDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                const dayClasses = classes.filter(c => c.date === fullDate);
-                const dailyTotal = dayClasses.reduce((sum, c) => sum + c.total, 0);
-
-                container.innerHTML += `
-                    <div class="calendar-day p-2">
-                        <span class="text-xs font-bold text-slate-400">${d}</span>
-                        <div class="mt-1 space-y-1">
-                            ${dayClasses.map(c => `
-                                <div class="text-[10px] leading-tight p-1 rounded ${c.paid ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-700'} truncate" title="${escapeHTML(c.studentName)}: ${c.total}€">
-                                    ${escapeHTML(c.studentName)}
-                                </div>
-                            `).join('')}
-                            ${dailyTotal > 0 ? `<div class="text-[10px] font-bold text-indigo-600 mt-1">Total: ${dailyTotal}€</div>` : ''}
-                        </div>
-                    </div>
-                `;
-            }
-        }
-
-        function prevMonth() { 
-            currentMonth--; 
-            if(currentMonth < 0) { currentMonth = 11; currentYear--; } 
-            renderCalendar(); 
-        }
-        function nextMonth() { 
-            currentMonth++; 
-            if(currentMonth > 11) { currentMonth = 0; currentYear++; } 
-            renderCalendar(); 
-        }
-
-        // --- AUXILIARES ---
-        function saveData() {
-            localStorage.setItem('students', JSON.stringify(students));
-            localStorage.setItem('classes', JSON.stringify(classes));
-        }
-
-        function formatDate(dateStr) {
-            const options = { day: 'numeric', month: 'short' };
-            const [year, month, day] = (dateStr || '').split('-').map(Number);
-            if (!year || !month || !day) return dateStr;
-            return new Date(year, month - 1, day).toLocaleDateString('es', options);
-        }
+        function togglePaid(id) { const idx = classes.findIndex(c => c.id === id); classes[idx].paid = !classes[idx].paid; saveData(); renderAll(); }
+        function saveData() { localStorage.setItem('students', JSON.stringify(students)); localStorage.setItem('classes', JSON.stringify(classes)); }
+        window.onload = () => { renderAll(); showSection('students'); };
     </script>
 </body>
 </html>
