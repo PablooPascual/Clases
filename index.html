@@ -39,17 +39,16 @@
         <section id="section-students" class="space-y-4">
             <div class="flex justify-between items-center">
                 <h3 class="font-extrabold text-xl">Mis Alumnos</h3>
-                <button onclick="openModal('studentModal')" class="bg-indigo-600 text-white w-10 h-10 rounded-2xl shadow-lg flex items-center justify-center">
+                <button onclick="openStudentModal()" class="bg-indigo-600 text-white w-10 h-10 rounded-2xl shadow-lg flex items-center justify-center">
                     <i class="fas fa-user-plus text-sm"></i>
                 </button>
             </div>
             <div id="students-grid" class="grid gap-3"></div>
         </section>
 
-        <!-- SECCIÓN 2: BALANCE (NUEVO DASHBOARD) -->
+        <!-- SECCIÓN 2: BALANCE -->
         <section id="section-balance" class="hidden space-y-6">
             <h3 class="font-extrabold text-xl px-1">Rendimiento Mensual</h3>
-            
             <div class="grid grid-cols-2 gap-4">
                 <div class="bg-indigo-600 text-white p-5 rounded-[2rem] shadow-xl shadow-indigo-100">
                     <p class="text-[10px] font-bold opacity-70 uppercase tracking-widest">Ingresos Mes</p>
@@ -62,18 +61,13 @@
                     <p id="balance-week-hours" class="text-[10px] mt-1 text-slate-400 font-medium">+0h esta semana</p>
                 </div>
             </div>
-
-            <!-- Contador de Clases -->
             <div class="bg-emerald-500 text-white p-6 rounded-[2rem] shadow-lg shadow-emerald-100 flex items-center justify-between">
                 <div>
                     <p class="text-[10px] font-bold opacity-80 uppercase tracking-widest">Clases dadas este mes</p>
                     <h4 id="balance-month-count" class="text-3xl font-black">0</h4>
                 </div>
-                <div class="bg-white/20 p-4 rounded-2xl text-2xl">
-                    <i class="fas fa-chalkboard-teacher"></i>
-                </div>
+                <div class="bg-white/20 p-4 rounded-2xl text-2xl"><i class="fas fa-chalkboard-teacher"></i></div>
             </div>
-
             <div class="space-y-3">
                 <h5 class="text-xs font-black uppercase text-rose-500 tracking-widest px-1">Pagos Pendientes</h5>
                 <div id="pending-list" class="space-y-2"></div>
@@ -84,13 +78,12 @@
         <section id="section-classes" class="hidden space-y-4">
             <div class="flex justify-between items-center">
                 <h3 class="font-extrabold text-xl">Historial</h3>
-                <button onclick="openModal('classModal')" class="bg-slate-800 text-white px-5 py-2.5 rounded-2xl text-xs font-black">
+                <button onclick="openClassModal()" class="bg-slate-800 text-white px-5 py-2.5 rounded-2xl text-xs font-black">
                     + NUEVA CLASE
                 </button>
             </div>
             <div id="recent-classes-list" class="space-y-3"></div>
         </section>
-
     </main>
 
     <!-- NAV INFERIOR -->
@@ -112,11 +105,13 @@
     <!-- MODAL ALUMNO -->
     <div id="studentModal" class="modal fixed inset-0 bg-slate-900/40 hidden z-[100] flex items-end justify-center p-4">
         <div class="bg-white rounded-[2.5rem] w-full max-w-md p-8 animate-slide-up">
-            <h3 class="text-2xl font-black mb-6">Nuevo Alumno</h3>
+            <h3 id="student-modal-title" class="text-2xl font-black mb-6">Nuevo Alumno</h3>
             <form id="studentForm" class="space-y-4">
+                <input type="hidden" id="input-student-id">
                 <input type="text" id="input-student-name" class="w-full p-4 bg-slate-50 border-none rounded-2xl" placeholder="Nombre completo" required>
                 <input type="number" id="input-student-rate" class="w-full p-4 bg-slate-50 border-none rounded-2xl" placeholder="Precio / hora" required>
                 <div class="flex gap-2 pt-2">
+                    <button type="button" id="btn-delete-student" class="hidden flex-1 bg-rose-50 text-rose-600 font-bold py-4 rounded-2xl">BORRAR</button>
                     <button type="button" onclick="closeModal('studentModal')" class="flex-1 font-bold text-slate-400">Cancelar</button>
                     <button type="submit" class="flex-[2] bg-indigo-600 text-white font-black py-4 rounded-2xl">GUARDAR</button>
                 </div>
@@ -127,8 +122,9 @@
     <!-- MODAL CLASE -->
     <div id="classModal" class="modal fixed inset-0 bg-slate-900/40 hidden z-[100] flex items-end justify-center p-4">
         <div class="bg-white rounded-[2.5rem] w-full max-w-md p-8 animate-slide-up">
-            <h3 class="text-2xl font-black mb-6">Registrar Clase</h3>
+            <h3 id="class-modal-title" class="text-2xl font-black mb-6">Registrar Clase</h3>
             <form id="classForm" class="space-y-4">
+                <input type="hidden" id="input-class-id">
                 <select id="input-class-student" class="w-full p-4 bg-slate-50 border-none rounded-2xl appearance-none" required></select>
                 <div class="flex gap-3">
                     <input type="date" id="input-class-date" class="w-1/2 p-4 bg-slate-50 border-none rounded-2xl" required>
@@ -138,7 +134,10 @@
                     <input type="checkbox" id="input-class-paid" class="w-5 h-5 rounded text-indigo-600 border-none">
                     <label for="input-class-paid" class="text-sm font-bold text-indigo-700 italic">¿Pagado ahora?</label>
                 </div>
-                <button type="submit" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl">REGISTRAR</button>
+                <div class="flex gap-2">
+                    <button type="button" id="btn-delete-class" class="hidden flex-1 bg-rose-50 text-rose-600 font-bold py-4 rounded-2xl">BORRAR</button>
+                    <button type="submit" class="flex-[2] bg-indigo-600 text-white font-black py-4 rounded-2xl">GUARDAR</button>
+                </div>
             </form>
         </div>
     </div>
@@ -147,33 +146,127 @@
         let students = JSON.parse(localStorage.getItem('students')) || [];
         let classes = JSON.parse(localStorage.getItem('classes')) || [];
 
+        function saveData() {
+            localStorage.setItem('students', JSON.stringify(students));
+            localStorage.setItem('classes', JSON.stringify(classes));
+        }
+
         function showSection(sectionId) {
             document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
             document.getElementById(`section-${sectionId}`).classList.remove('hidden');
             document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('nav-active'));
             document.getElementById(`nav-${sectionId}`).classList.add('nav-active');
             if(sectionId === 'balance') updateBalance();
+            renderAll();
         }
 
-        function openModal(id) { 
-            if(id === 'classModal' && students.length === 0) return alert("Añade un alumno primero");
-            document.getElementById(id).classList.remove('hidden'); 
-        }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        // --- GESTIÓN ALUMNOS ---
+        function openStudentModal(id = null) {
+            const modal = document.getElementById('studentModal');
+            const form = document.getElementById('studentForm');
+            const delBtn = document.getElementById('btn-delete-student');
+            form.reset();
+            
+            if(id) {
+                const s = students.find(x => x.id === id);
+                document.getElementById('student-modal-title').innerText = "Editar Alumno";
+                document.getElementById('input-student-id').value = s.id;
+                document.getElementById('input-student-name').value = s.name;
+                document.getElementById('input-student-rate').value = s.rate;
+                delBtn.classList.remove('hidden');
+                delBtn.onclick = () => {
+                    if(confirm('¿Borrar alumno y todas sus clases?')) {
+                        students = students.filter(x => x.id !== id);
+                        classes = classes.filter(x => x.studentId !== id);
+                        saveData(); renderAll(); closeModal('studentModal');
+                    }
+                };
+            } else {
+                document.getElementById('student-modal-title').innerText = "Nuevo Alumno";
+                document.getElementById('input-student-id').value = "";
+                delBtn.classList.add('hidden');
+            }
+            modal.classList.remove('hidden');
+        }
 
         document.getElementById('studentForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            students.push({ id: Date.now().toString(), name: document.getElementById('input-student-name').value, rate: parseFloat(document.getElementById('input-student-rate').value) });
-            saveData(); renderAll(); closeModal('studentModal'); e.target.reset();
+            const id = document.getElementById('input-student-id').value;
+            const name = document.getElementById('input-student-name').value;
+            const rate = parseFloat(document.getElementById('input-student-rate').value);
+
+            if(id) {
+                const idx = students.findIndex(s => s.id === id);
+                students[idx] = { ...students[idx], name, rate };
+                // Actualizar nombre en clases históricas
+                classes.forEach(c => { if(c.studentId === id) c.studentName = name; });
+            } else {
+                students.push({ id: Date.now().toString(), name, rate });
+            }
+            saveData(); renderAll(); closeModal('studentModal');
         });
+
+        // --- GESTIÓN CLASES ---
+        function openClassModal(id = null) {
+            if(students.length === 0) return alert("Añade un alumno primero");
+            const modal = document.getElementById('classModal');
+            const form = document.getElementById('classForm');
+            const delBtn = document.getElementById('btn-delete-class');
+            
+            document.getElementById('input-class-student').innerHTML = students.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+            form.reset();
+
+            if(id) {
+                const c = classes.find(x => x.id === id);
+                document.getElementById('class-modal-title').innerText = "Editar Clase";
+                document.getElementById('input-class-id').value = c.id;
+                document.getElementById('input-class-student').value = c.studentId;
+                document.getElementById('input-class-date').value = c.date;
+                document.getElementById('input-class-duration').value = c.duration;
+                document.getElementById('input-class-paid').checked = c.paid;
+                delBtn.classList.remove('hidden');
+                delBtn.onclick = () => {
+                    if(confirm('¿Borrar esta clase?')) {
+                        classes = classes.filter(x => x.id !== id);
+                        saveData(); renderAll(); closeModal('classModal');
+                    }
+                };
+            } else {
+                document.getElementById('class-modal-title').innerText = "Registrar Clase";
+                document.getElementById('input-class-id').value = "";
+                document.getElementById('input-class-date').value = new Date().toISOString().split('T')[0];
+                delBtn.classList.add('hidden');
+            }
+            modal.classList.remove('hidden');
+        }
 
         document.getElementById('classForm').addEventListener('submit', (e) => {
             e.preventDefault();
+            const id = document.getElementById('input-class-id').value;
             const sId = document.getElementById('input-class-student').value;
-            classes.push({ id: Date.now().toString(), studentId: sId, studentName: students.find(s => s.id === sId).name, date: document.getElementById('input-class-date').value, duration: parseFloat(document.getElementById('input-class-duration').value), paid: document.getElementById('input-class-paid').checked });
-            saveData(); renderAll(); closeModal('classModal'); e.target.reset();
+            const student = students.find(s => s.id === sId);
+            
+            const classData = {
+                id: id || Date.now().toString(),
+                studentId: sId,
+                studentName: student.name,
+                date: document.getElementById('input-class-date').value,
+                duration: parseFloat(document.getElementById('input-class-duration').value),
+                paid: document.getElementById('input-class-paid').checked
+            };
+
+            if(id) {
+                const idx = classes.findIndex(c => c.id === id);
+                classes[idx] = classData;
+            } else {
+                classes.push(classData);
+            }
+            saveData(); renderAll(); closeModal('classModal');
         });
 
+        // --- RENDERING Y BALANCE ---
         function updateBalance() {
             const now = new Date();
             const startOfWeek = new Date(now);
@@ -185,7 +278,8 @@
 
             classes.forEach(c => {
                 const cTime = new Date(c.date).getTime();
-                const total = c.duration * (students.find(s => s.id === c.studentId)?.rate || 0);
+                const rate = students.find(s => s.id === c.studentId)?.rate || 0;
+                const total = c.duration * rate;
                 if(cTime >= startOfWeek.getTime()) { wMoney += total; wHours += c.duration; }
                 if(cTime >= startOfMonth) { mMoney += total; mHours += c.duration; mCount++; }
             });
@@ -195,10 +289,7 @@
             document.getElementById('balance-month-hours').innerText = `${mHours}h`;
             document.getElementById('balance-week-hours').innerText = `+${wHours}h esta semana`;
             document.getElementById('balance-month-count').innerText = mCount;
-            renderPendingList();
-        }
-
-        function renderPendingList() {
+            
             const list = document.getElementById('pending-list');
             list.innerHTML = '';
             students.forEach(s => {
@@ -215,23 +306,52 @@
         }
 
         function renderAll() {
-            const grid = document.getElementById('students-grid'); grid.innerHTML = '';
+            // Render Alumnos
+            const grid = document.getElementById('students-grid'); 
+            grid.innerHTML = '';
             let globalPending = 0;
             students.forEach(s => {
                 const debt = classes.filter(c => c.studentId === s.id && !c.paid).reduce((sum, c) => sum + (c.duration * s.rate), 0);
                 globalPending += debt;
-                grid.innerHTML += `<div class="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 font-black text-sm">${s.name.charAt(0)}</div><div><h4 class="font-bold text-sm">${s.name}</h4><p class="text-[9px] text-slate-400 font-black uppercase mt-1">${s.rate}€/H</p></div></div><span class="text-[10px] font-black px-2 py-1 rounded-lg ${debt > 0 ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}">${debt > 0 ? `DEBE ${debt}€` : 'AL DÍA'}</span></div>`;
+                grid.innerHTML += `
+                <div onclick="openStudentModal('${s.id}')" class="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between active:scale-95 transition-transform">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 font-black text-sm">${s.name.charAt(0)}</div>
+                        <div>
+                            <h4 class="font-bold text-sm">${s.name}</h4>
+                            <p class="text-[9px] text-slate-400 font-black uppercase mt-1">${s.rate}€/H</p>
+                        </div>
+                    </div>
+                    <span class="text-[10px] font-black px-2 py-1 rounded-lg ${debt > 0 ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}">
+                        ${debt > 0 ? `DEBE ${debt}€` : 'AL DÍA'}
+                    </span>
+                </div>`;
             });
             document.getElementById('stat-pending-global').innerText = `${globalPending}€`;
-            const list = document.getElementById('recent-classes-list'); list.innerHTML = '';
-            [...classes].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 10).forEach(c => {
-                list.innerHTML += `<div class="bg-white p-4 rounded-2xl flex justify-between items-center border-l-4 ${c.paid ? 'border-emerald-400' : 'border-rose-400'}"><div><p class="font-bold text-sm text-slate-800">${c.studentName}</p><p class="text-[10px] text-slate-400">${c.date} · ${c.duration}h</p></div><button onclick="togglePaid('${c.id}')" class="text-xl ${c.paid ? 'text-emerald-500' : 'text-slate-200'}"><i class="fas ${c.paid ? 'fa-check-circle' : 'fa-circle-dollar-to-slot'}"></i></button></div>`;
+
+            // Render Clases
+            const list = document.getElementById('recent-classes-list'); 
+            list.innerHTML = '';
+            [...classes].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 15).forEach(c => {
+                list.innerHTML += `
+                <div class="bg-white p-4 rounded-2xl flex justify-between items-center border-l-4 ${c.paid ? 'border-emerald-400' : 'border-rose-400'}">
+                    <div onclick="openClassModal('${c.id}')" class="flex-1">
+                        <p class="font-bold text-sm text-slate-800">${c.studentName}</p>
+                        <p class="text-[10px] text-slate-400">${c.date} · ${c.duration}h</p>
+                    </div>
+                    <button onclick="togglePaid('${c.id}')" class="text-xl ml-4 ${c.paid ? 'text-emerald-500' : 'text-slate-200'}">
+                        <i class="fas ${c.paid ? 'fa-check-circle' : 'fa-circle-dollar-to-slot'}"></i>
+                    </button>
+                </div>`;
             });
-            document.getElementById('input-class-student').innerHTML = students.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
         }
 
-        function togglePaid(id) { const idx = classes.findIndex(c => c.id === id); classes[idx].paid = !classes[idx].paid; saveData(); renderAll(); }
-        function saveData() { localStorage.setItem('students', JSON.stringify(students)); localStorage.setItem('classes', JSON.stringify(classes)); }
+        function togglePaid(id) { 
+            const idx = classes.findIndex(c => c.id === id); 
+            classes[idx].paid = !classes[idx].paid; 
+            saveData(); renderAll(); if(!document.getElementById('section-balance').classList.contains('hidden')) updateBalance();
+        }
+
         window.onload = () => { renderAll(); showSection('students'); };
     </script>
 </body>
